@@ -5,5 +5,7 @@ ASCII operating system for interactive developer identity.
 INITIALIZING ASCII-OS...
 
 LOADING IDENTITY MODULE
+
 LOADING FILE SYSTEM
+
 ACCESS GRANTED
