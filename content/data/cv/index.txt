@@ -1,0 +1,5 @@
+CV SUMMARY
+
+Name: wkd1973
+Specialization: TypeScript, CLI architectures, product-oriented engineering
+Current Project: ASCII-OS Portfolio CLI

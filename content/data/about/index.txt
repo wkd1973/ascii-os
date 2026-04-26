@@ -1,0 +1,5 @@
+ASCII-OS Portfolio
+
+Operator: wkd1973
+Role: CLI-first developer
+Focus: system design, developer tooling, interactive terminal experiences

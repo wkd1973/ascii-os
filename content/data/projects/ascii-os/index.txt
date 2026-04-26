@@ -1,0 +1,6 @@
+Name: ASCII-OS
+Description: CLI-first interactive portfolio environment inspired by terminal UX.
+Stack: TypeScript, Node.js, ASCII CLI
+Role: Product + engineering
+Link: local:/projects/ascii-os
+Status: Active

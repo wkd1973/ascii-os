@@ -1,0 +1,14 @@
+{
+  "name": "ascii-os",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && node build/cli/repl.js",
+    "test": "npm run build && node --test tests"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "typescript": "^5.8.3"
+  }
+}
