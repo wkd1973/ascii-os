@@ -2,7 +2,7 @@ import readline from "node:readline";
 import { stdin, stdout } from "node:process";
 import { dispatchCommand } from "../engine/commands";
 import { createInitialState, getCwd, type SystemState } from "../engine/state";
-import { runCliCommand } from "./aliases";
+import { getScreenMode, runCliCommand, setScreenMode } from "./aliases";
 import { parseArgs } from "./parser";
 
 let state: SystemState = createInitialState();
@@ -68,8 +68,11 @@ const clearScreen = (): void => {
 };
 
 const main = async (): Promise<void> => {
+  let activeScreenMode = getScreenMode(state);
+
   const bootSession = (): void => {
     state = createInitialState();
+    setScreenMode(state, activeScreenMode);
     boot();
     const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
     renderInfo(motd.output);
@@ -95,6 +98,9 @@ const main = async (): Promise<void> => {
 
     const [command, ...args] = parsed;
     const result = runCliCommand(state, command, args);
+    if (result.screenMode) {
+      activeScreenMode = result.screenMode;
+    }
     if (result.clear) {
       clearScreen();
     }

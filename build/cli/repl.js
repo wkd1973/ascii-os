@@ -56,8 +56,10 @@ const clearScreen = () => {
     node_process_1.stdout.write("\x1bc");
 };
 const main = async () => {
+    let activeScreenMode = (0, aliases_1.getScreenMode)(state);
     const bootSession = () => {
         state = (0, state_1.createInitialState)();
+        (0, aliases_1.setScreenMode)(state, activeScreenMode);
         boot();
         const motd = (0, commands_1.dispatchCommand)(state, "open", ["/system/motd.txt"]);
         renderInfo(motd.output);
@@ -78,6 +80,9 @@ const main = async () => {
         }
         const [command, ...args] = parsed;
         const result = (0, aliases_1.runCliCommand)(state, command, args);
+        if (result.screenMode) {
+            activeScreenMode = result.screenMode;
+        }
         if (result.clear) {
             clearScreen();
         }
