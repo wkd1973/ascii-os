@@ -1,19 +1,16 @@
 import readline from "node:readline";
 import { stdin, stdout } from "node:process";
-import type { CommandResult } from "../engine/commands";
 import { dispatchCommand } from "../engine/commands";
-import { createInitialState, getCwd } from "../engine/state";
+import { createInitialState, getCwd, type SystemState } from "../engine/state";
+import { runCliCommand } from "./aliases";
+import { parseArgs } from "./parser";
 
-const state = createInitialState();
+let state: SystemState = createInitialState();
 const rl = readline.createInterface({
   input: stdin,
-  output: stdout
+  output: stdout,
+  historySize: 500
 });
-
-const ask = (prompt: string): Promise<string> =>
-  new Promise((resolve) => {
-    rl.question(prompt, resolve);
-  });
 
 const colors = {
   reset: "\x1b[0m",
@@ -23,51 +20,6 @@ const colors = {
 } as const;
 
 const getPrompt = (): string => `ascii-os:[${getCwd(state)}]> `;
-
-const parseArgs = (line: string): string[] => {
-  const tokens: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  let escaping = false;
-
-  for (const char of line) {
-    if (escaping) {
-      current += char;
-      escaping = false;
-      continue;
-    }
-
-    if (char === "\\") {
-      escaping = true;
-      continue;
-    }
-
-    if (char === "\"") {
-      inQuotes = !inQuotes;
-      continue;
-    }
-
-    if (!inQuotes && /\s/.test(char)) {
-      if (current.length > 0) {
-        tokens.push(current);
-        current = "";
-      }
-      continue;
-    }
-
-    current += char;
-  }
-
-  if (escaping) {
-    current += "\\";
-  }
-
-  if (current.length > 0) {
-    tokens.push(current);
-  }
-
-  return tokens;
-};
 
 const boot = (): void => {
   stdout.write("BOOTING ASCII-OS PORTFOLIO...\n");
@@ -111,157 +63,56 @@ const renderResult = (command: string, output: string): void => {
   stdout.write(`${colorize(colors.green, "[OK]")} ${output}\n\n`);
 };
 
-const formatProjectsListing = (lsOutput: string): string => {
-  const slugs = lsOutput
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.replace(/\/$/, ""));
-
-  if (slugs.length === 0 || slugs[0] === "(empty)") {
-    return "Projects: (empty)";
-  }
-
-  const body = slugs.map((slug) => `  - ${slug}`).join("\n");
-  return ["Projects:", body, "", "Use: project <slug> or open <slug>/index.txt"].join("\n");
-};
-
-const runAlias = (command: string, args: string[]): CommandResult | null => {
-  if (command === "home") {
-    return dispatchCommand(state, "cd", ["/home"]);
-  }
-
-  if (command === "projects") {
-    const move = dispatchCommand(state, "cd", ["/projects"]);
-    if (isErrorOutput(move.output)) {
-      return move;
-    }
-
-    const list = dispatchCommand(state, "ls", []);
-    if (isErrorOutput(list.output)) {
-      return list;
-    }
-
-    return {
-      ...list,
-      output: formatProjectsListing(list.output)
-    };
-  }
-
-  if (command === "about") {
-    const move = dispatchCommand(state, "cd", ["/about"]);
-    if (isErrorOutput(move.output)) {
-      return move;
-    }
-
-    return dispatchCommand(state, "open", ["index.txt"]);
-  }
-
-  if (command === "cv") {
-    const move = dispatchCommand(state, "cd", ["/cv"]);
-    if (isErrorOutput(move.output)) {
-      return move;
-    }
-
-    return dispatchCommand(state, "open", ["index.txt"]);
-  }
-
-  if (command === "guide") {
-    return {
-      output: [
-        "ASCII-OS Portfolio Guide",
-        "",
-        "Quick flow:",
-        "  home                Jump to /home",
-        "  projects            Show project slugs",
-        "  project <slug>      Open project card",
-        "  about               Open profile",
-        "  cv                  Open CV summary",
-        "",
-        "Explore manually:",
-        "  ls",
-        "  cd <path>",
-        "  open <path>",
-        "  pwd"
-      ].join("\n")
-    };
-  }
-
-  if (command === "project") {
-    const slug = args[0];
-    if (!slug) {
-      return {
-        output: "Usage: project <slug>"
-      };
-    }
-
-    const move = dispatchCommand(state, "cd", ["/projects"]);
-    if (isErrorOutput(move.output)) {
-      return move;
-    }
-
-    return dispatchCommand(state, "open", [`${slug}/index.txt`]);
-  }
-
-  return null;
-};
-
-const runCommandWithUx = (command: string, args: string[]): CommandResult => {
-  const lower = command.toLowerCase();
-  const aliasResult = runAlias(lower, args);
-  if (aliasResult) {
-    return aliasResult;
-  }
-
-  if (lower === "help") {
-    const baseHelp = dispatchCommand(state, command, args);
-    const shortcuts = [
-      "",
-      "Portfolio shortcuts:",
-      "  guide               Show quick navigation guide",
-      "  home                Go to /home",
-      "  projects            Go to /projects and list items",
-      "  project <slug>      Open project card",
-      "  about               Open /about profile",
-      "  cv                  Open /cv"
-    ].join("\n");
-
-    return {
-      ...baseHelp,
-      output: `${baseHelp.output}${shortcuts}`
-    };
-  }
-
-  return dispatchCommand(state, command, args);
+const clearScreen = (): void => {
+  stdout.write("\x1bc");
 };
 
 const main = async (): Promise<void> => {
-  boot();
-  const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
-  renderInfo(motd.output);
+  const bootSession = (): void => {
+    state = createInitialState();
+    boot();
+    const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
+    renderInfo(motd.output);
 
-  const toHome = dispatchCommand(state, "cd", ["/home"]);
-  if (isErrorOutput(toHome.output)) {
-    renderResult("cd", toHome.output);
-  }
+    const toHome = dispatchCommand(state, "cd", ["/home"]);
+    if (isErrorOutput(toHome.output)) {
+      renderResult("cd", toHome.output);
+    }
+  };
 
-  while (true) {
-    const input = await ask(getPrompt());
+  bootSession();
+
+  rl.setPrompt(getPrompt());
+  rl.prompt();
+
+  rl.on("line", (input) => {
     const parsed = parseArgs(input);
     if (parsed.length === 0) {
-      continue;
+      rl.setPrompt(getPrompt());
+      rl.prompt();
+      return;
     }
 
     const [command, ...args] = parsed;
-    const result = runCommandWithUx(command, args);
-    renderResult(command.toLowerCase(), result.output);
+    const result = runCliCommand(state, command, args);
+    if (result.clear) {
+      clearScreen();
+    }
+    if (result.reboot) {
+      bootSession();
+    }
+    if (!(result.clear && result.output.length === 0)) {
+      renderResult(command.toLowerCase(), result.output);
+    }
 
     if (result.exit) {
-      break;
+      rl.close();
+      return;
     }
-  }
 
-  rl.close();
+    rl.setPrompt(getPrompt());
+    rl.prompt();
+  });
 };
 
 main().catch((error: unknown) => {

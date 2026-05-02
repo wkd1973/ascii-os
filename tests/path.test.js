@@ -18,6 +18,11 @@ test("normalizePath handles dot and dot-dot segments", () => {
   assert.equal(normalizePath("/home", "../../"), "/");
 });
 
+test("normalizePath clamps above root and normalizes repeated separators", () => {
+  assert.equal(normalizePath("/", "../../../system/motd.txt"), "/system/motd.txt");
+  assert.equal(normalizePath("/projects", "ascii-os//index.txt"), "/projects/ascii-os/index.txt");
+});
+
 test("path getters return null for non-existing paths", () => {
   const state = createInitialState();
   assert.equal(getNodeAtPath(state.root, "/missing"), null);

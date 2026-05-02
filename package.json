@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "npm run build && node build/cli/repl.js",
+    "start:web": "npm run build && node build/web/server.js",
     "test": "npm run build && node --test tests"
   },
   "devDependencies": {

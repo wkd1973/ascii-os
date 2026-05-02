@@ -1,1 +1,7 @@
+
+	░█░█░█▀█░▀▀█░▀█▀░█▀█░█▀▀
+	░█▄█░█░█░░░█░░█░░█▀█░▀▀█
+	░▀░▀░▀▀▀░▀▀░░░▀░░▀░▀░▀▀▀
+
 INITIALIZING ASCII-OS...
+Stworzony przez Wojciecha Dobrowolskiego.
