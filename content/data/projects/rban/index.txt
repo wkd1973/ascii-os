@@ -1,0 +1,15 @@
+Name: RBAN
+Description: Podsystem automatyzujący wypełnianie pozycji sprawozdawczych dla NBP.
+Domain: Bankowość / raportowanie
+Status: System wewnętrzny / historyczny
+Role: Programista / utrzymanie i rozwój
+Stack: C#, ASP.NET, sprawozdawczość [do uzupełnienia]
+Zakres odpowiedzialności:
+- Automatyzacja uzupełniania pozycji sprawozdawczych
+- Utrzymanie procesu raportowego wobec NBP
+- [do uzupełnienia]
+Opis:
+- System wspierał sprawozdawczość i automatyzował część obowiązków raportowych wobec NBP.
+Uwagi:
+- [do uzupełnienia]
+Link: [do uzupełnienia]

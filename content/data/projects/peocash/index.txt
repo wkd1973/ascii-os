@@ -1,0 +1,15 @@
+Name: Peocash
+Description: System zarządzający dużym obiegiem gotówki w banku PEKAO.
+Domain: Bankowość / cash management
+Status: System wewnętrzny / historyczny
+Role: Programista .NET / utrzymanie i rozwój
+Stack: C#, ASP.NET, MSSQL [do uzupełnienia]
+Zakres odpowiedzialności:
+- Rozwój i utrzymanie logiki obsługi przepływów gotówkowych
+- Stabilizacja działania systemu w środowisku bankowym
+- [do uzupełnienia]
+Opis:
+- System związany z obsługą i kontrolą przepływów gotówkowych w środowisku bankowym.
+Uwagi:
+- [do uzupełnienia]
+Link: [do uzupełnienia]

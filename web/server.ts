@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
-import { getScreenMode, runCliCommand, setScreenMode } from "../cli/aliases";
+import { getPromptTemplate, getScreenMode, renderPrompt, runCliCommand, setPromptTemplate, setScreenMode } from "../cli/aliases";
 import { parseArgs } from "../cli/parser";
 import { dispatchCommand } from "../engine/commands";
 import { createInitialState, getCwd, type SystemState } from "../engine/state";
@@ -33,7 +33,16 @@ const html = `<!doctype html>
     body.mode-cga { --rows:25; }
     body.mode-ega { --rows:43; }
     body.mode-vga { --rows:50; }
-    #out { margin:0; white-space:pre-wrap; }
+    #out { display:flex; flex-direction:column; gap:0.5rem; margin:0; }
+    .output-block { white-space:pre-wrap; }
+    .help-panel { border:1px solid #2d6a4f; background:#071610; padding:0.9rem 1rem 1rem; box-shadow:0 0 0 1px #1b4332 inset; }
+    .help-title { color:var(--accent); text-transform:uppercase; letter-spacing:0.2em; margin-bottom:0.85rem; font-weight:bold; }
+    .help-section + .help-section { margin-top:0.85rem; }
+    .help-section-title { color:var(--accent); margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.08em; }
+    .help-grid { display:grid; grid-template-columns:18ch 1fr; column-gap:1rem; row-gap:0.2rem; }
+    .help-command { color:var(--fg); white-space:nowrap; }
+    .help-desc { color:var(--muted); }
+    .help-note { grid-column:1 / -1; }
     .row { display:flex; gap:0; align-items:center; margin-top:2px; }
     #in { flex:1; background:transparent; color:var(--fg); border:0; outline:0; padding:0; font:inherit; }
     .muted { color:var(--muted); }
@@ -44,7 +53,7 @@ const html = `<!doctype html>
     <div class="head">ascii-os:web</div>
     <div class="term">
       <div id="screen">
-        <pre id="out"></pre>
+        <div id="out"></div>
         <form class="row" id="form">
           <span class="muted" id="prompt">ascii-os:[/]> </span>
           <input id="in" autocomplete="off" />
@@ -62,12 +71,87 @@ const html = `<!doctype html>
     const input = document.getElementById("in");
     const form = document.getElementById("form");
 
-    const print = (text) => {
-      out.textContent += text + "\\n";
+    const appendBlock = (text) => {
+      const block = document.createElement("div");
+      block.className = "output-block";
+      block.textContent = text;
+      out.appendChild(block);
+      screen.scrollTop = screen.scrollHeight;
+    };
+    const renderHelpPanel = (text) => {
+      const lines = text.split("\\n");
+      const panel = document.createElement("div");
+      panel.className = "help-panel";
+
+      const title = document.createElement("div");
+      title.className = "help-title";
+      title.textContent = "COMMAND REFERENCE";
+      panel.appendChild(title);
+
+      let currentSection = null;
+      let currentGrid = null;
+
+      const flushSection = () => {
+        if (!currentSection || !currentGrid) {
+          return;
+        }
+        panel.appendChild(currentSection);
+        currentSection = null;
+        currentGrid = null;
+      };
+
+      for (const line of lines) {
+        if (!line.trim()) {
+          continue;
+        }
+
+        if (line.endsWith(":")) {
+          flushSection();
+          currentSection = document.createElement("div");
+          currentSection.className = "help-section";
+          const heading = document.createElement("div");
+          heading.className = "help-section-title";
+          heading.textContent = line.slice(0, -1);
+          currentSection.appendChild(heading);
+          currentGrid = document.createElement("div");
+          currentGrid.className = "help-grid";
+          currentSection.appendChild(currentGrid);
+          continue;
+        }
+
+        if (!currentGrid) {
+          currentSection = document.createElement("div");
+          currentSection.className = "help-section";
+          currentGrid = document.createElement("div");
+          currentGrid.className = "help-grid";
+          currentSection.appendChild(currentGrid);
+        }
+
+        const match = line.match(/^  (.+?)(?:\s{2,})(.+)$/);
+        if (match) {
+          const command = document.createElement("div");
+          command.className = "help-command";
+          command.textContent = match[1].trimEnd();
+          const desc = document.createElement("div");
+          desc.className = "help-desc";
+          desc.textContent = match[2].trim();
+          currentGrid.appendChild(command);
+          currentGrid.appendChild(desc);
+          continue;
+        }
+
+        const note = document.createElement("div");
+        note.className = "help-desc help-note";
+        note.textContent = line;
+        currentGrid.appendChild(note);
+      }
+
+      flushSection();
+      out.appendChild(panel);
       screen.scrollTop = screen.scrollHeight;
     };
     const clearOutput = () => {
-      out.textContent = "";
+      out.replaceChildren();
       screen.scrollTop = 0;
     };
     const setScreenMode = (mode) => {
@@ -83,7 +167,7 @@ const html = `<!doctype html>
       document.body.classList.add("mode-cga");
     };
 
-    const setPrompt = (cwd) => { promptEl.textContent = "ascii-os:[" + cwd + "]> "; };
+    const setPrompt = (text) => { promptEl.textContent = text; };
 
     const post = async (url, payload) => {
       const res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload || {}) });
@@ -97,9 +181,9 @@ const html = `<!doctype html>
       if (data.screenMode) {
         setScreenMode(data.screenMode);
       }
-      for (const line of data.lines) print(line);
-      print("");
-      setPrompt(data.cwd);
+      setPrompt(data.prompt);
+      for (const line of data.lines) appendBlock(line);
+      appendBlock("");
       input.focus();
     };
 
@@ -130,7 +214,7 @@ const html = `<!doctype html>
       if (!command.trim()) return;
       commandHistory.push(command);
       historyIndex = commandHistory.length;
-      print(promptEl.textContent + command);
+      appendBlock(promptEl.textContent + command);
       input.value = "";
       screen.scrollTop = screen.scrollHeight;
       const data = await post("/api/command", { sessionId, input: command });
@@ -138,22 +222,28 @@ const html = `<!doctype html>
         clearOutput();
       }
       if (data.reboot && Array.isArray(data.rebootLines)) {
-        for (const line of data.rebootLines) print(line);
-        print("");
+        for (const line of data.rebootLines) appendBlock(line);
+        appendBlock("");
       }
       if (data.screenMode) {
         setScreenMode(data.screenMode);
       }
-      if (data.output) print(data.output);
-      if (!data.clear) print("");
-      setPrompt(data.cwd);
+      if (data.output) {
+        if (command.trim().toLowerCase() === "help") {
+          renderHelpPanel(data.output);
+        } else {
+          appendBlock(data.output);
+        }
+      }
+      if (!data.clear) appendBlock("");
+      setPrompt(data.prompt);
       screen.scrollTop = screen.scrollHeight;
       if (data.exit) {
         input.disabled = true;
       }
     });
 
-    boot().catch((err) => { print("Fatal error: " + err.message); });
+    boot().catch((err) => { appendBlock("Fatal error: " + err.message); });
   </script>
 </body>
 </html>`;
@@ -182,6 +272,7 @@ const handleInit = (res: ServerResponse): void => {
   const state = createInitialState();
   const sessionId = randomUUID();
   setScreenMode(state, "cga");
+  setPromptTemplate(state, getPromptTemplate(state));
   sessions.set(sessionId, { state });
 
   const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
@@ -191,6 +282,7 @@ const handleInit = (res: ServerResponse): void => {
     sessionId,
     cwd: getCwd(state),
     screenMode: getScreenMode(state),
+    prompt: renderPrompt(state),
     lines: [
       "BOOTING ASCII-OS WEB...",
       "LOADING CONTENT FROM /content/data...",
@@ -214,7 +306,13 @@ const handleCommand = async (req: IncomingMessage, res: ServerResponse): Promise
 
   const parsed = parseArgs(input);
   if (parsed.length === 0) {
-    sendJson(res, 200, { output: "", cwd: getCwd(session.state), exit: false, screenMode: null });
+    sendJson(res, 200, {
+      output: "",
+      cwd: getCwd(session.state),
+      exit: false,
+      screenMode: null,
+      prompt: renderPrompt(session.state)
+    });
     return;
   }
 
@@ -224,8 +322,10 @@ const handleCommand = async (req: IncomingMessage, res: ServerResponse): Promise
 
   if (result.reboot) {
     const preservedMode = getScreenMode(session.state);
+    const preservedPromptTemplate = getPromptTemplate(session.state);
     const freshState = createInitialState();
     setScreenMode(freshState, preservedMode);
+    setPromptTemplate(freshState, preservedPromptTemplate);
     session.state = freshState;
     const motd = dispatchCommand(freshState, "open", ["/system/motd.txt"]);
     dispatchCommand(freshState, "cd", ["/home"]);
@@ -242,6 +342,7 @@ const handleCommand = async (req: IncomingMessage, res: ServerResponse): Promise
   sendJson(res, 200, {
     output: result.output,
     cwd: getCwd(session.state),
+    prompt: renderPrompt(session.state),
     exit: result.exit === true,
     clear: result.clear === true,
     reboot: result.reboot === true,

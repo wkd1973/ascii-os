@@ -1,17 +1,22 @@
 # ASCII-OS Portfolio — Podsumowanie
 
 ## 1. Cel projektu
-ASCII-OS został ustawiony jako interaktywne portfolio CLI (a nie pełny OS), gdzie użytkownik eksploruje profil i projekty jak system plików.
+ASCII-OS jest interaktywnym portfolio CLI z webowym terminalem, gdzie użytkownik eksploruje profil i projekty jak system plików.
 
 ## 2. Co zostało wdrożone
 
 ### Kernel i CLI
-- Minimalny kernel komend: `help`, `ls`, `cd`, `open`, `pwd`, `exit`
-- REPL CLI z parserem argumentów (obsługa cudzysłowów i spacji w nazwach)
+- Kernel plikowy: `help`, `ls`, `cd`, `open`, `pwd`, `cat`, `tree`, `mkdir`, `touch`, `write`
+- Komendy sterujące sesją: `clear`, `reboot`, `shutdown`, `exit`, `quit`
+- Aliasy DOS i shellowe: `dir`, `type`, `ver`, `date`, `time`, `whoami`, `mode`, `prompt`
+- Aliasy portfolio: `home`, `projects`, `project <slug>`, `about`, `cv`, `guide`
+- REPL CLI z parserem argumentów
 - `cwd` trzymane w `engine/state.ts` jako źródło prawdy
 
 ### UX / OS feel layer (bez zmiany kernela)
-- Prompt: `ascii-os:[cwd]>`
+- Prompt z szablonem, np. `ascii-os:[/home]> `
+- Tryby ekranu: `cga`, `ega`, `vga`
+- `mode` pokazuje aktualny tryb, a `prompt` pozwala go przeglądać i zmieniać
 - Boot sequence:
   - `BOOTING ASCII-OS PORTFOLIO...`
   - `LOADING CONTENT FROM /content/data...`
@@ -26,6 +31,7 @@ ASCII-OS został ustawiony jako interaktywne portfolio CLI (a nie pełny OS), gd
   - zielony: sukces
   - czerwony: błąd
   - niebieski: info
+- Reboot zachowuje wybrany tryb ekranu i szablon promptu
 
 ### Alias flow portfolio
 - `home` -> przejście do `/home`
@@ -34,6 +40,13 @@ ASCII-OS został ustawiony jako interaktywne portfolio CLI (a nie pełny OS), gd
 - `about` -> otwarcie `/about/index.txt`
 - `cv` -> otwarcie `/cv/index.txt`
 - `guide` -> szybki onboarding komend
+- `dir` -> `ls`
+- `type` -> `cat`
+- `ver` -> wersja systemu
+- `date` -> data UTC
+- `time` -> czas UTC
+- `whoami` -> identyfikator użytkownika
+- `shutdown` -> komunikat zamknięcia systemu
 
 ## 3. Źródło danych portfolio
 - Fizyczny skan katalogu: `content/data`
@@ -61,7 +74,9 @@ Mapowanie:
 - Zakres testów:
   - `engine/path.ts`
   - `engine/commands.ts`
-- Status: testy przechodzą (`npm test` -> 9/9)
+  - `cli/aliases.ts`
+  - `web/server.ts`
+- Status: testy przechodzą przez `npm test`
 
 ## 6. Jak uruchomić
 ```bash
@@ -79,9 +94,10 @@ cv
 ```
 
 ## 7. Najbliższe sensowne kroki
-1. Dodać kolejne projekty jako slugi w `content/data/projects/<slug>/index.txt`
-2. Ujednolicić format wszystkich opisów projektów (Name, Description, Stack, Role, Link, Status)
-3. Dodać testy warstwy UX aliasów (`guide`, `projects`, `project <slug>`)
+1. Dodać realny config system dla trybu ekranu, promptu i zachowania startowego
+2. Dodać persistence sesji w `localStorage` dla web terminala
+3. Wydzielić renderer webowy z `server.ts` do osobnych plików HTML/CSS/JS
+4. Dodać testy frontendowe dla historii, `clear`, `reboot` i zmiany trybu
 
 ## 8. Changelog Per Commit (README-ready)
 ```md
@@ -121,4 +137,9 @@ cv
 - Migrated projects to `content/data/projects/<slug>/index.txt`
 - Added `project <slug>` alias for direct project card opening
 - Added `content/data/home/index.txt` landing page
+
+### feat(shell): add DOS-style aliases and display modes
+- Added `dir`, `type`, `ver`, `date`, `time`, `whoami`, `shutdown`
+- Added display modes `cga`, `ega`, `vga` and `mode`
+- Added prompt template command with reboot persistence
 ```

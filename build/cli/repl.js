@@ -21,7 +21,7 @@ const colors = {
     red: "\x1b[31m",
     blue: "\x1b[34m"
 };
-const getPrompt = () => `ascii-os:[${(0, state_1.getCwd)(state)}]> `;
+const getPrompt = () => (0, aliases_1.renderPrompt)(state);
 const boot = () => {
     node_process_1.stdout.write("BOOTING ASCII-OS PORTFOLIO...\n");
     node_process_1.stdout.write("LOADING CONTENT FROM /content/data...\n");
@@ -29,7 +29,17 @@ const boot = () => {
     node_process_1.stdout.write("WELCOME, OPERATOR\n\n");
 };
 const isErrorOutput = (output) => /^(Unknown command:|ls:|cd:|open:)/.test(output);
-const isInfoOutput = (command) => command === "help" || command === "exit" || command === "quit" || command === "guide";
+const isInfoOutput = (command) => command === "help" ||
+    command === "exit" ||
+    command === "quit" ||
+    command === "guide" ||
+    command === "shutdown" ||
+    command === "ver" ||
+    command === "date" ||
+    command === "time" ||
+    command === "mode" ||
+    command === "whoami" ||
+    command === "prompt";
 const colorize = (color, text) => `${color}${text}${colors.reset}`;
 const renderInfo = (output) => {
     if (output.length === 0) {
@@ -57,9 +67,11 @@ const clearScreen = () => {
 };
 const main = async () => {
     let activeScreenMode = (0, aliases_1.getScreenMode)(state);
+    let activePromptTemplate = (0, aliases_1.getPromptTemplate)(state);
     const bootSession = () => {
         state = (0, state_1.createInitialState)();
         (0, aliases_1.setScreenMode)(state, activeScreenMode);
+        (0, aliases_1.setPromptTemplate)(state, activePromptTemplate);
         boot();
         const motd = (0, commands_1.dispatchCommand)(state, "open", ["/system/motd.txt"]);
         renderInfo(motd.output);
@@ -83,6 +95,7 @@ const main = async () => {
         if (result.screenMode) {
             activeScreenMode = result.screenMode;
         }
+        activePromptTemplate = (0, aliases_1.getPromptTemplate)(state);
         if (result.clear) {
             clearScreen();
         }

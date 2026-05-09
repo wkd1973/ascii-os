@@ -9,32 +9,43 @@ Engine modules must stay UI-agnostic and expose deterministic command behavior.
 - CLI/UI layers are adapters that call engine functions.
 - Engine does not import from `/cli` or `/ui`.
 
-## MVP Command Scope (Frozen)
+## Kernel Command Scope
 
-- Official MVP command API is limited to:
-- `ls`, `cd`, `open`, `help`
-- These are the only product-level commands for MVP user flow.
-
-- Other built-ins currently present in codebase are treated as internal/dev commands:
-- `pwd`, `cat`, `tree`, `mkdir`, `touch`, `write`, `exit`, `quit`
-- Internal/dev commands are not considered stable product surface.
+- The engine command registry is the filesystem kernel surface.
+- CLI and web layers may add aliases and presentation commands on top.
+- Current built-in engine commands are:
+  - `help`
+  - `ls`
+  - `cd`
+  - `open`
+  - `pwd`
+  - `cat`
+  - `tree`
+  - `mkdir`
+  - `touch`
+  - `write`
+  - `clear`
+  - `reboot`
+  - `shutdown`
+  - `exit`
+  - `quit`
 
 ## Command Freeze Policy
 
-- No new command names are added during MVP stabilization.
-- A new command can be introduced only if the core user flow cannot be completed without it.
+- No new engine command names should be added casually.
+- A new engine command can be introduced only if the core filesystem flow cannot be completed without it.
 - Any approved exception must include:
-- a short rationale in PR/commit message
-- tests for the new behavior
-- a spec update in this file
+  - a short rationale in PR/commit message
+  - tests for the new behavior
+  - a spec update in this file
 
 ## Public API
 
 ### `createInitialState(): SystemState`
 
 - Creates runtime state with:
-- `root: DirectoryNode` loaded from `content/data` (fallback to static `rootFs`)
-- `cwd: "/"` as the initial working directory
+  - `root: DirectoryNode` loaded from `content/data` (fallback to static `rootFs`)
+  - `cwd: "/"` as the initial working directory
 
 ### `getCwd(state: SystemState): string`
 
@@ -50,7 +61,7 @@ Engine modules must stay UI-agnostic and expose deterministic command behavior.
 - Command dispatcher.
 - Command name is case-insensitive.
 - Unknown command returns:
-- `Unknown command: <name>. Type 'help'.`
+  - `Unknown command: <name>. Type 'help'.`
 
 ### `runCommand(state: SystemState, input: string): CommandResult`
 
@@ -64,11 +75,17 @@ Engine modules must stay UI-agnostic and expose deterministic command behavior.
 type CommandResult = {
   output: string;
   exit?: boolean;
+  clear?: boolean;
+  reboot?: boolean;
+  screenMode?: "cga" | "ega" | "vga";
 };
 ```
 
 - `output` is always a string (possibly empty).
 - `exit === true` is emitted only by exit-style commands.
+- `clear === true` requests the caller to clear the display.
+- `reboot === true` requests the caller to reinitialize the session state.
+- `screenMode` is used by CLI/web presentation layers.
 
 ## Built-in Commands
 
@@ -81,7 +98,7 @@ type CommandResult = {
 - Max one argument, else `ls: too many arguments`
 - Missing path defaults to `.`
 - Non-existing path:
-- `ls: cannot access '<path>': No such file or directory`
+  - `ls: cannot access '<path>': No such file or directory`
 - File target: prints basename
 - Directory target: prints sorted entries; directories are suffixed with `/`
 - Empty directory: `(empty)`
@@ -91,7 +108,7 @@ type CommandResult = {
 - Max one argument, else `cd: too many arguments`
 - No argument moves to `/`
 - Missing directory:
-- `cd: <path>: No such directory`
+  - `cd: <path>: No such directory`
 - On success updates `cwd` and returns empty output
 
 ### `pwd`
@@ -111,18 +128,56 @@ type CommandResult = {
 - Same error/argument semantics as `open`
 - Existing file: returns file content
 
+### `mkdir <path>`
+
+- Max one argument, else `mkdir: too many arguments`
+- No argument: `mkdir: missing directory path`
+- Missing parent: `mkdir: cannot create directory '<path>': No such parent directory`
+- Existing path: `mkdir: <path>: already exists`
+- Success: creates a directory and returns empty output
+
+### `touch <path>`
+
+- Max one argument, else `touch: too many arguments`
+- No argument: `touch: missing file path`
+- Directory target: `touch: <path>: Is a directory`
+- Missing parent: `touch: cannot create file '<path>': No such parent directory`
+- Success: creates an empty file and returns empty output
+
+### `write <path> <content>`
+
+- Requires at least two arguments, else `write: usage: write <path> <content>`
+- Directory target: `write: <path>: Is a directory`
+- Missing parent: `write: cannot write '<path>': No such parent directory`
+- Success: writes file content and returns empty output
+
 ### `tree [path]`
 
 - Max one argument, else `tree: too many arguments`
 - Missing path defaults to `.`
 - Missing target:
-- `tree: cannot access '<path>': No such file or directory`
+  - `tree: cannot access '<path>': No such file or directory`
 - File target: prints basename
 - Directory target: prints ASCII tree
 
 ### `exit` / `quit`
 
 - Returns output `Shutting down ASCII-OS.`
+- Sets `exit: true`
+
+### `clear`
+
+- Returns empty output.
+- Sets `clear: true`.
+
+### `reboot`
+
+- Returns empty output.
+- Sets `clear: true` and `reboot: true`.
+
+### `shutdown`
+
+- Returns output `System halted.`
 - Sets `exit: true`
 
 ## Path Semantics
@@ -140,5 +195,5 @@ type CommandResult = {
 - Error message strings are part of the contract and must be test-covered.
 - Existing command names and argument limits are stable.
 - Any breaking change requires:
-- API/version note in this file
-- test updates proving intentional behavior change
+  - API/version note in this file
+  - test updates proving intentional behavior change

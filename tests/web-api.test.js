@@ -73,3 +73,31 @@ test("web reboot preserves selected screen mode", async () => {
     assert.equal(mode.output, "Display mode: VGA 80x50.");
   });
 });
+
+test("web prompt command updates and preserves prompt across reboot", async () => {
+  await withServer(async (port) => {
+    const init = await postJson(port, "/api/init", {});
+    const changed = await postJson(port, "/api/command", { sessionId: init.sessionId, input: "prompt [$p]$g" });
+    const reboot = await postJson(port, "/api/command", { sessionId: init.sessionId, input: "reboot" });
+    const current = await postJson(port, "/api/command", { sessionId: init.sessionId, input: "prompt" });
+
+    assert.equal(init.prompt, "ascii-os:[/home]> ");
+    assert.equal(changed.prompt, "[/home]>");
+    assert.equal(reboot.prompt, "[/home]>");
+    assert.equal(current.output, "Prompt template: [$p]$g");
+  });
+});
+
+test("web help output uses grouped command sections", async () => {
+  await withServer(async (port) => {
+    const init = await postJson(port, "/api/init", {});
+    const help = await postJson(port, "/api/command", { sessionId: init.sessionId, input: "help" });
+
+    assert.ok(help.output.includes("Core filesystem commands:"));
+    assert.ok(help.output.includes("Session commands:"));
+    assert.ok(help.output.includes("Portfolio shortcuts:"));
+    assert.ok(help.output.includes("DOS-style commands:"));
+    assert.ok(help.output.includes("Display modes:"));
+    assert.ok(help.output.includes("Prompt:"));
+  });
+});

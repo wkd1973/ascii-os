@@ -1,0 +1,11 @@
+.git
+node_modules
+build
+coverage
+.cache
+.npm
+*.log
+.env
+.env.*
+Dockerfile
+__Dockerfile

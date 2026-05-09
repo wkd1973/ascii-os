@@ -1,8 +1,22 @@
 ASCII-OS PORTFOLIO HOME
 
-Navigation:
+Welcome.
+This shell is organized around a filesystem-style portfolio.
+
+Start here:
 - guide
 - projects
-- project ascii-os
 - about
 - cv
+
+What each path does:
+- guide -> quick navigation and content format reference
+- projects -> projects overview with seeded cards
+- about -> short professional profile
+- cv -> full CV summary
+
+Direct examples:
+- project ascii-os
+- project izyda
+- project peocash
+- project <slug>

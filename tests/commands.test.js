@@ -19,6 +19,17 @@ test("cd changes cwd correctly", () => {
   assert.equal(getCwd(state), "/home");
 });
 
+test("help output groups filesystem and session commands", () => {
+  const state = createInitialState();
+
+  const result = dispatchCommand(state, "help", []);
+
+  assert.ok(result.output.includes("Core filesystem commands:"));
+  assert.ok(result.output.includes("Session commands:"));
+  assert.ok(result.output.includes("write <path> <text>"));
+  assert.ok(result.output.includes("quit"));
+});
+
 test("ls returns sorted children for current directory", () => {
   const state = createInitialState();
 
@@ -330,4 +341,13 @@ test("reboot returns reboot and clear flags", () => {
   assert.equal(result.output, "");
   assert.equal(result.clear, true);
   assert.equal(result.reboot, true);
+});
+
+test("shutdown exits with halt message", () => {
+  const state = createInitialState();
+
+  const result = dispatchCommand(state, "shutdown", []);
+
+  assert.equal(result.output, "System halted.");
+  assert.equal(result.exit, true);
 });

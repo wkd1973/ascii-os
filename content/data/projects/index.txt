@@ -1,0 +1,14 @@
+PROJECTS OVERVIEW
+
+Project cards are loaded from directories in /projects.
+
+Recommended flow:
+1. Run `projects` to see the current generated list
+2. Open a card with `project <slug>`
+3. Fill in `Stack`, `Role`, `Zakres odpowiedzialności`, `Uwagi`, and `Link`
+4. Keep descriptions short and factual
+
+To add a project:
+1. Create `/projects/<slug>/index.txt` in content
+2. Fill in `Stack`, `Role`, `Zakres odpowiedzialności`, `Uwagi`, and `Link`
+3. Rebuild/restart the runtime so content is loaded again

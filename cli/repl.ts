@@ -1,8 +1,8 @@
 import readline from "node:readline";
 import { stdin, stdout } from "node:process";
 import { dispatchCommand } from "../engine/commands";
-import { createInitialState, getCwd, type SystemState } from "../engine/state";
-import { getScreenMode, runCliCommand, setScreenMode } from "./aliases";
+import { createInitialState, type SystemState } from "../engine/state";
+import { getPromptTemplate, getScreenMode, renderPrompt, runCliCommand, setPromptTemplate, setScreenMode } from "./aliases";
 import { parseArgs } from "./parser";
 
 let state: SystemState = createInitialState();
@@ -19,7 +19,7 @@ const colors = {
   blue: "\x1b[34m"
 } as const;
 
-const getPrompt = (): string => `ascii-os:[${getCwd(state)}]> `;
+const getPrompt = (): string => renderPrompt(state);
 
 const boot = (): void => {
   stdout.write("BOOTING ASCII-OS PORTFOLIO...\n");
@@ -32,7 +32,17 @@ const isErrorOutput = (output: string): boolean =>
   /^(Unknown command:|ls:|cd:|open:)/.test(output);
 
 const isInfoOutput = (command: string): boolean =>
-  command === "help" || command === "exit" || command === "quit" || command === "guide";
+  command === "help" ||
+  command === "exit" ||
+  command === "quit" ||
+  command === "guide" ||
+  command === "shutdown" ||
+  command === "ver" ||
+  command === "date" ||
+  command === "time" ||
+  command === "mode" ||
+  command === "whoami" ||
+  command === "prompt";
 
 const colorize = (color: string, text: string): string => `${color}${text}${colors.reset}`;
 
@@ -69,10 +79,12 @@ const clearScreen = (): void => {
 
 const main = async (): Promise<void> => {
   let activeScreenMode = getScreenMode(state);
+  let activePromptTemplate = getPromptTemplate(state);
 
   const bootSession = (): void => {
     state = createInitialState();
     setScreenMode(state, activeScreenMode);
+    setPromptTemplate(state, activePromptTemplate);
     boot();
     const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
     renderInfo(motd.output);
@@ -101,6 +113,7 @@ const main = async (): Promise<void> => {
     if (result.screenMode) {
       activeScreenMode = result.screenMode;
     }
+    activePromptTemplate = getPromptTemplate(state);
     if (result.clear) {
       clearScreen();
     }

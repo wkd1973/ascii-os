@@ -1,10 +1,14 @@
 import { dispatchCommand, type CommandResult } from "../engine/commands";
+import { getDirectoryAtPath } from "../engine/path";
 import type { SystemState } from "../engine/state";
+import type { DirectoryNode } from "../engine/types";
 
 export type ScreenMode = "cga" | "ega" | "vga";
 
 const defaultScreenMode: ScreenMode = "cga";
 const screenModeByState = new WeakMap<SystemState, ScreenMode>();
+const defaultPromptTemplate = "ascii-os:[$p]$g$s";
+const promptTemplateByState = new WeakMap<SystemState, string>();
 
 export const getScreenMode = (state: SystemState): ScreenMode =>
   screenModeByState.get(state) ?? defaultScreenMode;
@@ -13,25 +17,79 @@ export const setScreenMode = (state: SystemState, mode: ScreenMode): void => {
   screenModeByState.set(state, mode);
 };
 
+export const getPromptTemplate = (state: SystemState): string =>
+  promptTemplateByState.get(state) ?? defaultPromptTemplate;
+
+export const setPromptTemplate = (state: SystemState, template: string): void => {
+  promptTemplateByState.set(state, template);
+};
+
+export const renderPrompt = (state: SystemState): string =>
+  getPromptTemplate(state)
+    .replace(/\$p/gi, state.cwd)
+    .replace(/\$g/gi, ">")
+    .replace(/\$l/gi, "<")
+    .replace(/\$b/gi, "|")
+    .replace(/\$s/gi, " ");
+
 const isErrorOutput = (output: string): boolean => /^(Unknown command:|ls:|cd:|open:)/.test(output);
 
-const formatProjectsListing = (lsOutput: string): string => {
-  const slugs = lsOutput
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.replace(/\/$/, ""));
-
-  if (slugs.length === 0 || slugs[0] === "(empty)") {
-    return "Projects: (empty)";
+const getProjectSlugs = (state: SystemState): string[] => {
+  const projects = getDirectoryAtPath(state.root, "/projects");
+  if (!projects) {
+    return [];
   }
 
-  const body = slugs.map((slug) => `  - ${slug}`).join("\n");
-  return ["Projects:", body, "", "Use: project <slug> or open <slug>/index.txt"].join("\n");
+  return Object.entries(projects.children)
+    .filter(([, node]) => node.kind === "dir" && hasIndexFile(node))
+    .map(([name]) => name)
+    .sort((a, b) => a.localeCompare(b));
+};
+
+const hasIndexFile = (directory: DirectoryNode): boolean =>
+  directory.children["index.txt"]?.kind === "file";
+
+const formatProjectsOverview = (state: SystemState): string => {
+  const slugs = getProjectSlugs(state);
+  const cards = slugs.length === 0 ? "- (empty)" : slugs.map((slug) => `- ${slug}`).join("\n");
+
+  return [
+    "PROJECTS OVERVIEW",
+    "",
+    "The project cards below are loaded from /projects.",
+    "",
+    "Available project cards:",
+    cards,
+    "",
+    "Recommended flow:",
+    "1. Open a card with `project <slug>`",
+    "2. Fill in `Stack`, `Role`, `Zakres odpowiedzialności`, `Uwagi`, and `Link`",
+    "3. Keep descriptions short and factual"
+  ].join("\n");
+};
+
+const formatGuideProjectSlugs = (state: SystemState): string[] => {
+  const slugs = getProjectSlugs(state);
+  if (slugs.length === 0) {
+    return ["  (empty)"];
+  }
+
+  return slugs.map((slug) => `  ${slug}`);
 };
 
 const runAlias = (state: SystemState, command: string, args: string[]): CommandResult | null => {
-  if (args.length > 0 && (command === "cga" || command === "ega" || command === "vga" || command === "mode")) {
+  if (
+    args.length > 0 &&
+    (command === "cga" ||
+      command === "ega" ||
+      command === "vga" ||
+      command === "mode" ||
+      command === "ver" ||
+      command === "date" ||
+      command === "time" ||
+      command === "shutdown" ||
+      command === "whoami")
+  ) {
     return { output: `${command}: this alias does not accept arguments` };
   }
 
@@ -45,15 +103,7 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
       return move;
     }
 
-    const list = dispatchCommand(state, "ls", []);
-    if (isErrorOutput(list.output)) {
-      return list;
-    }
-
-    return {
-      ...list,
-      output: formatProjectsListing(list.output)
-    };
+    return { output: formatProjectsOverview(state) };
   }
 
   if (command === "about") {
@@ -81,12 +131,27 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
         "",
         "Quick flow:",
         "  home                Jump to /home",
-        "  projects            Show project slugs",
+        "  projects            Open projects overview",
         "  project <slug>      Open project card",
         "  about               Open profile",
         "  cv                  Open CV summary",
         "",
+        "Project cards:",
+        ...formatGuideProjectSlugs(state),
+        "",
+        "Project card format:",
+        "  Name                Project title",
+        "  Description         Short project summary",
+        "  Domain              Business domain",
+        "  Status              Current label/state",
+        "  Role                Your role in the project",
+        "  Stack               Tech stack, fill manually",
+        "  Zakres odpowiedzialności  Responsibilities, fill manually",
+        "  Uwagi               Extra notes, fill manually",
+        "  Link                Reference or local link",
+        "",
         "Explore manually:",
+        "  projects",
         "  ls",
         "  cd <path>",
         "  open <path>",
@@ -111,8 +176,24 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
     return dispatchCommand(state, "open", [`${slug}/index.txt`]);
   }
 
+  if (command === "dir") {
+    return dispatchCommand(state, "ls", args);
+  }
+
+  if (command === "type") {
+    return dispatchCommand(state, "cat", args);
+  }
+
   if (command === "cls") {
     return dispatchCommand(state, "clear", []);
+  }
+
+  if (command === "shutdown") {
+    return dispatchCommand(state, "shutdown", []);
+  }
+
+  if (command === "whoami") {
+    return { output: "wkd1973" };
   }
 
   if (command === "cga") {
@@ -132,6 +213,41 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
     const label = current.toUpperCase();
     const geometry = current === "cga" ? "80x25" : current === "ega" ? "80x43" : "80x50";
     return { output: `Display mode: ${label} ${geometry}.`, screenMode: current };
+  }
+
+  if (command === "ver") {
+    return { output: "ASCII-OS version 0.1.0" };
+  }
+
+  if (command === "date") {
+    const now = new Date();
+    const yyyy = String(now.getUTCFullYear());
+    const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(now.getUTCDate()).padStart(2, "0");
+    return { output: `${yyyy}-${mm}-${dd} UTC` };
+  }
+
+  if (command === "time") {
+    const now = new Date();
+    const hh = String(now.getUTCHours()).padStart(2, "0");
+    const mm = String(now.getUTCMinutes()).padStart(2, "0");
+    const ss = String(now.getUTCSeconds()).padStart(2, "0");
+    return { output: `${hh}:${mm}:${ss} UTC` };
+  }
+
+  if (command === "prompt") {
+    if (args.length === 0) {
+      return { output: `Prompt template: ${getPromptTemplate(state)}` };
+    }
+
+    const template = args.join(" ");
+    if (template.toLowerCase() === "default") {
+      setPromptTemplate(state, defaultPromptTemplate);
+      return { output: `Prompt template set to ${defaultPromptTemplate}` };
+    }
+
+    setPromptTemplate(state, template);
+    return { output: `Prompt template set to ${template}` };
   }
 
   return null;
@@ -159,11 +275,26 @@ export const runCliCommand = (state: SystemState, command: string, args: string[
       "  about               Open /about profile",
       "  cv                  Open /cv",
       "",
+      "DOS-style commands:",
+      "  dir [path]          Alias for ls",
+      "  type <path>         Alias for cat",
+      "  ver                 Show ASCII-OS version",
+      "  date                Show current UTC date",
+      "  time                Show current UTC time",
+      "  whoami              Show current user",
+      "  cls                 Alias for clear",
+      "  shutdown            Shut down ASCII-OS",
+      "",
       "Display modes:",
       "  cga                 Set screen to 80x25",
       "  ega                 Set screen to 80x43",
       "  vga                 Set screen to 80x50",
-      "  mode                Show current display mode"
+      "  mode                Show current display mode",
+      "",
+      "Prompt:",
+      "  prompt              Show current prompt template",
+      "  prompt <template>   Set prompt template",
+      "  prompt default      Restore default prompt"
     ].join("\n");
 
     return {

@@ -15,20 +15,24 @@ export type CommandRegistry = Record<string, CommandHandler>;
 
 const helpCommand: CommandHandler = () => ({
   output: [
-    "Available commands:",
+    "Core filesystem commands:",
     "  help                Show this help",
     "  ls [path]           List directory entries",
     "  cd <path>           Change current directory",
-    "  pwd                 Show current directory",
     "  open <path>         Show file content",
+    "  pwd                 Show current directory",
     "  cat <path>          Print file content",
+    "  tree [path]         Show directory tree",
     "  mkdir <path>        Create directory",
     "  touch <path>        Create empty file",
-    "  write <p> <text>    Write file content",
-    "  tree [path]         Show directory tree",
+    "  write <path> <text> Write file content",
+    "",
+    "Session commands:",
     "  clear               Clear the console screen",
     "  reboot              Simulate system reboot",
-    "  exit                Exit ASCII-OS"
+    "  shutdown            Shut down ASCII-OS",
+    "  exit                Exit ASCII-OS",
+    "  quit                Exit ASCII-OS"
   ].join("\n")
 });
 
@@ -277,6 +281,7 @@ const treeCommand: CommandHandler = (state, args) => {
 };
 
 const exitCommand: CommandHandler = () => ({ output: "Shutting down ASCII-OS.", exit: true });
+const shutdownCommand: CommandHandler = () => ({ output: "System halted.", exit: true });
 const clearCommand: CommandHandler = () => ({ output: "", clear: true });
 const rebootCommand: CommandHandler = () => ({ output: "", clear: true, reboot: true });
 
@@ -293,6 +298,7 @@ export const createCommandRegistry = (): CommandRegistry => ({
   tree: treeCommand,
   clear: clearCommand,
   reboot: rebootCommand,
+  shutdown: shutdownCommand,
   exit: exitCommand,
   quit: exitCommand
 });

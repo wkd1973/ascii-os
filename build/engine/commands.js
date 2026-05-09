@@ -5,20 +5,24 @@ const state_1 = require("./state");
 const path_1 = require("./path");
 const helpCommand = () => ({
     output: [
-        "Available commands:",
+        "Core filesystem commands:",
         "  help                Show this help",
         "  ls [path]           List directory entries",
         "  cd <path>           Change current directory",
-        "  pwd                 Show current directory",
         "  open <path>         Show file content",
+        "  pwd                 Show current directory",
         "  cat <path>          Print file content",
+        "  tree [path]         Show directory tree",
         "  mkdir <path>        Create directory",
         "  touch <path>        Create empty file",
-        "  write <p> <text>    Write file content",
-        "  tree [path]         Show directory tree",
+        "  write <path> <text> Write file content",
+        "",
+        "Session commands:",
         "  clear               Clear the console screen",
         "  reboot              Simulate system reboot",
-        "  exit                Exit ASCII-OS"
+        "  shutdown            Shut down ASCII-OS",
+        "  exit                Exit ASCII-OS",
+        "  quit                Exit ASCII-OS"
     ].join("\n")
 });
 const lsCommand = (state, args) => {
@@ -213,6 +217,7 @@ const treeCommand = (state, args) => {
     return { output: renderTree(node, label) };
 };
 const exitCommand = () => ({ output: "Shutting down ASCII-OS.", exit: true });
+const shutdownCommand = () => ({ output: "System halted.", exit: true });
 const clearCommand = () => ({ output: "", clear: true });
 const rebootCommand = () => ({ output: "", clear: true, reboot: true });
 const createCommandRegistry = () => ({
@@ -228,6 +233,7 @@ const createCommandRegistry = () => ({
     tree: treeCommand,
     clear: clearCommand,
     reboot: rebootCommand,
+    shutdown: shutdownCommand,
     exit: exitCommand,
     quit: exitCommand
 });

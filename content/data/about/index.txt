@@ -1,5 +1,19 @@
-ASCII-OS Portfolio
+WOJCIECH DOBROWOLSKI
 
-Operator: wkd1973
-Role: CLI-first developer
-Focus: system design, developer tooling, interactive terminal experiences
+Profil:
+Ekspert .NET z niemal 30-letnim doświadczeniem komercyjnym. Pracuję nad systemami, które muszą być stabilne, przewidywalne i dobrze utrzymywalne, szczególnie w obszarze finansów i aplikacji enterprise.
+
+Specjalizacja:
+- C#, ASP.NET, ASP.NET MVC
+- JavaScript, TypeScript, HTML, CSS
+- MSSQL, MySQL, PostgreSQL
+- MongoDB, SOLR, Elastic Search
+
+Charakter pracy:
+Łączę backend, frontend i odpowiedzialność za całość rozwiązania. Najbliżej mi do pracy end-to-end: od analizy biznesowej, przez implementację, po utrzymanie systemów produkcyjnych o wysokiej dostępności.
+
+Obszary:
+- systemy finansowe
+- bankowość i faktoring
+- aplikacje webowe i intranetowe
+- utrzymanie produkcji i rozwój funkcji

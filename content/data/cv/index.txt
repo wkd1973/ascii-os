@@ -1,5 +1,36 @@
-CV SUMMARY
+CV WOJCIECH DOBROWOLSKI
 
-Name: wkd1973
-Specialization: TypeScript, CLI architectures, product-oriented engineering
-Current Project: ASCII-OS Portfolio CLI
+Kontakt:
+Telefon: 792 925 130
+Email: wojciech.krzysztof.dobrowolski@gmail.com
+
+Profil zawodowy:
+Ekspert .NET z niemal 30-letnim stażem komercyjnym w branży IT. Specjalizuję się w projektowaniu, utrzymaniu i rozwoju krytycznych systemów finansowych, w tym zaawansowanych aplikacji bankowych. Łączę backend, frontend i odpowiedzialność za cały cykl dostarczenia rozwiązania.
+
+Umiejętności techniczne:
+- Backend: C#, ASP.NET, ASP.NET MVC
+- Frontend: JavaScript, TypeScript, HTML, CSS, jQuery, Angular, Bootstrap, Materialize
+- Bazy relacyjne: MSSQL, MySQL, PostgreSQL
+- Bazy nierelacyjne i wyszukiwarki: MongoDB, SOLR (Lucene), Elastic Search
+- Inne technologie: PHP, Unity3D
+
+Doświadczenie zawodowe:
+- BMS sp. z o.o. | Programista .NET / ekspert ds. systemów finansowych | styczeń 2016 - obecnie
+- Compensa S.A. | Programista .NET | grudzień 2014 - grudzień 2015
+- Trader.com (Polska) | Programista ASP.NET | listopad 2008 - listopad 2014
+- Amiatys | Programista PHP | styczeń 2013 - grudzień 2013
+- Comtica sp. z o.o. | Programista ASP.NET | luty 2008 - listopad 2008
+- Business Management Software sp. z o.o. | Programista Delphi | styczeń 2006 - marzec 2008
+- Delfin s.c. oraz Wyd. Edukacyjne "Geniusz" | Programista Delphi | 1996 - 2005
+
+Wybrane systemy i projekty:
+- Izyda
+- Peocash
+- Ozyrys
+- GRYF
+- RBAN
+- Limes
+
+Wykształcenie:
+- Politechnika Lubelska - Informatyka, studia magisterskie przerwane z powodów osobistych
+- Technikum Mechaniczne w Świdniku - Technik budowy płatowca
