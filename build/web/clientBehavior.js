@@ -76,18 +76,25 @@ const planCommandResponseRender = (command, response) => {
         actions.push({ type: "clear" });
     }
     if (response.reboot && Array.isArray(response.rebootLines)) {
-        for (const line of response.rebootLines) {
-            actions.push({ type: "append", text: line });
-        }
-        actions.push({ type: "append", text: "" });
+        actions.push({ type: "reboot", lines: response.rebootLines });
+    }
+    if (response.aocMode) {
+        actions.push({ type: "aocMode" });
     }
     if (response.screenMode) {
         actions.push({ type: "screenMode", mode: response.screenMode });
     }
+    if (response.theme) {
+        actions.push({ type: "theme", theme: response.theme });
+    }
     if (response.output) {
-        actions.push((0, exports.shouldRenderHelpPanel)(command)
+        const action = (0, exports.shouldRenderHelpPanel)(command)
             ? { type: "appendHelp", text: response.output }
-            : { type: "append", text: response.output });
+            : { type: "append", text: response.output };
+        if (action.type === "append" && response.animate) {
+            action.animate = true;
+        }
+        actions.push(action);
     }
     if (!response.clear) {
         actions.push({ type: "append", text: "" });

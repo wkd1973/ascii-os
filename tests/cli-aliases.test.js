@@ -84,7 +84,7 @@ test("guide alias returns quick navigation output", () => {
   assert.ok(result.output.includes("ASCII-OS Portfolio Guide"));
   assert.ok(result.output.includes("Project cards:"));
   assert.ok(result.output.includes("izyda"));
-  assert.ok(result.output.includes("Project card format:"));
+  assert.ok(result.output.includes("Project card content:"));
   assert.ok(result.output.includes("projects"));
   assert.ok(result.output.includes("project <slug>"));
 });

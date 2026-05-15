@@ -3,7 +3,7 @@ ASCII operating system for interactive developer identity.
 
 ## Current State
 
-ASCII-OS is a CLI-first virtual filesystem with a web terminal wrapper. The engine stays UI-agnostic; CLI and web layers add shell behavior, aliases, and presentation.
+ASCII-OS is a CLI-first virtual filesystem with a web terminal wrapper. It features a classic dual-pane file manager (**ASCII-OS Commander**) and an interactive shell with retro boot animations and persistence.
 
 ## Command Surface
 
@@ -15,11 +15,10 @@ ASCII-OS is a CLI-first virtual filesystem with a web terminal wrapper. The engi
 - `pwd`
 - `cat`
 - `tree`
-- `mkdir`
-- `touch`
-- `write`
 
 ### Shell and UX commands
+- `aoc` (ASCII-OS Commander)
+- `set` (Configuration)
 - `clear`
 - `reboot`
 - `shutdown`

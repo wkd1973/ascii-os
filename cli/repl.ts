@@ -3,7 +3,7 @@ import { stdin, stdout } from "node:process";
 import { dispatchCommand } from "../engine/commands";
 import { createInitialState, type SystemState } from "../engine/state";
 import { getPromptTemplate, getScreenMode, renderPrompt, runCliCommand, setPromptTemplate, setScreenMode } from "./aliases";
-import { parseArgs } from "./parser";
+import { parseArgs } from "../engine/parser";
 
 let state: SystemState = createInitialState();
 const rl = readline.createInterface({

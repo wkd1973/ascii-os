@@ -90,7 +90,7 @@ test("web root returns terminal html shell", async () => {
 
     assert.equal(page.statusCode, 200);
     assert.equal(page.contentType, "text/html; charset=utf-8");
-    assert.ok(page.body.includes('<div class="head">ascii-os:web</div>'));
+    assert.ok(page.body.includes('<span>ascii-os:web</span>'));
     assert.ok(page.body.includes("<style>"));
     assert.ok(page.body.includes("<script>"));
     assert.ok(page.body.includes('post("/api/init")'));

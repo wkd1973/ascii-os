@@ -21,9 +21,6 @@ Engine modules must stay UI-agnostic and expose deterministic command behavior.
   - `pwd`
   - `cat`
   - `tree`
-  - `mkdir`
-  - `touch`
-  - `write`
   - `clear`
   - `reboot`
   - `shutdown`
@@ -65,9 +62,9 @@ Engine modules must stay UI-agnostic and expose deterministic command behavior.
 
 ### `runCommand(state: SystemState, input: string): CommandResult`
 
-- Splits input by whitespace.
+- Parses input using `parseArgs` (supports quotes and escaping).
 - Empty/whitespace-only input returns `{ output: "" }`.
-- For quoted argument support, adapters may call `dispatchCommand` directly.
+- Dispatches to the registry based on the first token.
 
 ## Command Result Contract
 
@@ -127,29 +124,6 @@ type CommandResult = {
 
 - Same error/argument semantics as `open`
 - Existing file: returns file content
-
-### `mkdir <path>`
-
-- Max one argument, else `mkdir: too many arguments`
-- No argument: `mkdir: missing directory path`
-- Missing parent: `mkdir: cannot create directory '<path>': No such parent directory`
-- Existing path: `mkdir: <path>: already exists`
-- Success: creates a directory and returns empty output
-
-### `touch <path>`
-
-- Max one argument, else `touch: too many arguments`
-- No argument: `touch: missing file path`
-- Directory target: `touch: <path>: Is a directory`
-- Missing parent: `touch: cannot create file '<path>': No such parent directory`
-- Success: creates an empty file and returns empty output
-
-### `write <path> <content>`
-
-- Requires at least two arguments, else `write: usage: write <path> <content>`
-- Directory target: `write: <path>: Is a directory`
-- Missing parent: `write: cannot write '<path>': No such parent directory`
-- Success: writes file content and returns empty output
 
 ### `tree [path]`
 

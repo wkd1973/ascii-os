@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runCommand = exports.dispatchCommand = exports.dispatchFromRegistry = exports.registerCommand = exports.createCommandRegistry = void 0;
 const state_1 = require("./state");
 const path_1 = require("./path");
+const parser_1 = require("./parser");
 const helpCommand = () => ({
     output: [
         "Core filesystem commands:",
@@ -13,9 +14,6 @@ const helpCommand = () => ({
         "  pwd                 Show current directory",
         "  cat <path>          Print file content",
         "  tree [path]         Show directory tree",
-        "  mkdir <path>        Create directory",
-        "  touch <path>        Create empty file",
-        "  write <path> <text> Write file content",
         "",
         "Session commands:",
         "  clear               Clear the console screen",
@@ -99,89 +97,6 @@ const catCommand = (state, args) => {
     }
     return { output: file.content };
 };
-const getParentPath = (absolutePath) => {
-    const parts = absolutePath.split("/").filter(Boolean);
-    if (parts.length <= 1) {
-        return "/";
-    }
-    return `/${parts.slice(0, -1).join("/")}`;
-};
-const mkdirCommand = (state, args) => {
-    if (args.length > 1) {
-        return { output: "mkdir: too many arguments" };
-    }
-    if (!args[0]) {
-        return { output: "mkdir: missing directory path" };
-    }
-    const target = args[0];
-    const absolutePath = (0, path_1.normalizePath)((0, state_1.getCwd)(state), target);
-    if (absolutePath === "/") {
-        return { output: "mkdir: /: already exists" };
-    }
-    const existing = (0, path_1.getNodeAtPath)(state.root, absolutePath);
-    if (existing) {
-        return { output: `mkdir: ${target}: already exists` };
-    }
-    const parentPath = getParentPath(absolutePath);
-    const parent = (0, path_1.getDirectoryAtPath)(state.root, parentPath);
-    if (!parent) {
-        return { output: `mkdir: cannot create directory '${target}': No such parent directory` };
-    }
-    const name = (0, path_1.getBaseName)(absolutePath);
-    parent.children[name] = { kind: "dir", children: {} };
-    return { output: "" };
-};
-const touchCommand = (state, args) => {
-    if (args.length > 1) {
-        return { output: "touch: too many arguments" };
-    }
-    if (!args[0]) {
-        return { output: "touch: missing file path" };
-    }
-    const target = args[0];
-    const absolutePath = (0, path_1.normalizePath)((0, state_1.getCwd)(state), target);
-    if (absolutePath === "/") {
-        return { output: "touch: /: Is a directory" };
-    }
-    const existing = (0, path_1.getNodeAtPath)(state.root, absolutePath);
-    if (existing?.kind === "dir") {
-        return { output: `touch: ${target}: Is a directory` };
-    }
-    if (existing?.kind === "file") {
-        return { output: "" };
-    }
-    const parentPath = getParentPath(absolutePath);
-    const parent = (0, path_1.getDirectoryAtPath)(state.root, parentPath);
-    if (!parent) {
-        return { output: `touch: cannot create file '${target}': No such parent directory` };
-    }
-    const name = (0, path_1.getBaseName)(absolutePath);
-    parent.children[name] = { kind: "file", content: "" };
-    return { output: "" };
-};
-const writeCommand = (state, args) => {
-    if (args.length < 2) {
-        return { output: "write: usage: write <path> <content>" };
-    }
-    const [target, ...contentParts] = args;
-    const content = contentParts.join(" ");
-    const absolutePath = (0, path_1.normalizePath)((0, state_1.getCwd)(state), target);
-    if (absolutePath === "/") {
-        return { output: "write: /: Is a directory" };
-    }
-    const existing = (0, path_1.getNodeAtPath)(state.root, absolutePath);
-    if (existing?.kind === "dir") {
-        return { output: `write: ${target}: Is a directory` };
-    }
-    const parentPath = getParentPath(absolutePath);
-    const parent = (0, path_1.getDirectoryAtPath)(state.root, parentPath);
-    if (!parent) {
-        return { output: `write: cannot write '${target}': No such parent directory` };
-    }
-    const name = (0, path_1.getBaseName)(absolutePath);
-    parent.children[name] = { kind: "file", content };
-    return { output: "" };
-};
 const renderTree = (directory, label) => {
     const lines = [label];
     const walk = (dir, prefix) => {
@@ -227,9 +142,6 @@ const createCommandRegistry = () => ({
     pwd: pwdCommand,
     open: openCommand,
     cat: catCommand,
-    mkdir: mkdirCommand,
-    touch: touchCommand,
-    write: writeCommand,
     tree: treeCommand,
     clear: clearCommand,
     reboot: rebootCommand,
@@ -255,11 +167,11 @@ const defaultRegistry = (0, exports.createCommandRegistry)();
 const dispatchCommand = (state, name, args) => (0, exports.dispatchFromRegistry)(defaultRegistry, state, name, args);
 exports.dispatchCommand = dispatchCommand;
 const runCommand = (state, input) => {
-    const trimmed = input.trim();
-    if (!trimmed) {
+    const parsed = (0, parser_1.parseArgs)(input);
+    if (parsed.length === 0) {
         return { output: "" };
     }
-    const [name, ...args] = trimmed.split(/\s+/);
+    const [name, ...args] = parsed;
     return (0, exports.dispatchCommand)(state, name, args);
 };
 exports.runCommand = runCommand;

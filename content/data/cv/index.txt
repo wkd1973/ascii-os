@@ -1,13 +1,14 @@
-CV WOJCIECH DOBROWOLSKI
+# CV WOJCIECH DOBROWOLSKI
 
 Kontakt:
-Telefon: 792 925 130
-Email: wojciech.krzysztof.dobrowolski@gmail.com
+**Telefon:** 792 925 130
+**Email:** wojciech.krzysztof.dobrowolski@gmail.com
 
-Profil zawodowy:
+# Profil zawodowy:
 Ekspert .NET z niemal 30-letnim stażem komercyjnym w branży IT. Specjalizuję się w projektowaniu, utrzymaniu i rozwoju krytycznych systemów finansowych, w tym zaawansowanych aplikacji bankowych. Łączę backend, frontend i odpowiedzialność za cały cykl dostarczenia rozwiązania.
 
 Umiejętności techniczne:
+
 - Backend: C#, ASP.NET, ASP.NET MVC
 - Frontend: JavaScript, TypeScript, HTML, CSS, jQuery, Angular, Bootstrap, Materialize
 - Bazy relacyjne: MSSQL, MySQL, PostgreSQL

@@ -1,27 +1,18 @@
 import { dispatchCommand, type CommandResult } from "../engine/commands";
 import { getDirectoryAtPath } from "../engine/path";
-import type { SystemState } from "../engine/state";
+import { type SystemState, type ScreenMode, DEFAULT_CONFIG } from "../engine/state";
 import type { DirectoryNode } from "../engine/types";
 
-export type ScreenMode = "cga" | "ega" | "vga";
-
-const defaultScreenMode: ScreenMode = "cga";
-const screenModeByState = new WeakMap<SystemState, ScreenMode>();
-const defaultPromptTemplate = "ascii-os:[$p]$g$s";
-const promptTemplateByState = new WeakMap<SystemState, string>();
-
-export const getScreenMode = (state: SystemState): ScreenMode =>
-  screenModeByState.get(state) ?? defaultScreenMode;
+export const getScreenMode = (state: SystemState): ScreenMode => state.config.screenMode;
 
 export const setScreenMode = (state: SystemState, mode: ScreenMode): void => {
-  screenModeByState.set(state, mode);
+  state.config.screenMode = mode;
 };
 
-export const getPromptTemplate = (state: SystemState): string =>
-  promptTemplateByState.get(state) ?? defaultPromptTemplate;
+export const getPromptTemplate = (state: SystemState): string => state.config.promptTemplate;
 
 export const setPromptTemplate = (state: SystemState, template: string): void => {
-  promptTemplateByState.set(state, template);
+  state.config.promptTemplate = template;
 };
 
 export const renderPrompt = (state: SystemState): string =>
@@ -63,8 +54,8 @@ const formatProjectsOverview = (state: SystemState): string => {
     "",
     "Recommended flow:",
     "1. Open a card with `project <slug>`",
-    "2. Fill in `Stack`, `Role`, `Zakres odpowiedzialności`, `Uwagi`, and `Link`",
-    "3. Keep descriptions short and factual"
+    "2. Read the details about the project",
+    "3. Navigate back with `projects` or `cd ..`"
   ].join("\n");
 };
 
@@ -76,6 +67,8 @@ const formatGuideProjectSlugs = (state: SystemState): string[] => {
 
   return slugs.map((slug) => `  ${slug}`);
 };
+
+const SUPPORTED_THEMES = ["default", "pearl", "bw", "blue", "amber", "green"];
 
 const runAlias = (state: SystemState, command: string, args: string[]): CommandResult | null => {
   if (
@@ -112,7 +105,8 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
       return move;
     }
 
-    return dispatchCommand(state, "open", ["index.txt"]);
+    const result = dispatchCommand(state, "open", ["index.txt"]);
+    return { ...result, animate: true };
   }
 
   if (command === "cv") {
@@ -121,7 +115,8 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
       return move;
     }
 
-    return dispatchCommand(state, "open", ["index.txt"]);
+    const result = dispatchCommand(state, "open", ["index.txt"]);
+    return { ...result, animate: true };
   }
 
   if (command === "guide") {
@@ -139,16 +134,16 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
         "Project cards:",
         ...formatGuideProjectSlugs(state),
         "",
-        "Project card format:",
+        "Project card content:",
         "  Name                Project title",
         "  Description         Short project summary",
         "  Domain              Business domain",
         "  Status              Current label/state",
         "  Role                Your role in the project",
-        "  Stack               Tech stack, fill manually",
-        "  Zakres odpowiedzialności  Responsibilities, fill manually",
-        "  Uwagi               Extra notes, fill manually",
-        "  Link                Reference or local link",
+        "  Stack               Tech stack used",
+        "  Zakres odpowiedzialności  Responsibilities and impact",
+        "  Uwagi               Extra notes and context",
+        "  Link                Reference or live demo",
         "",
         "Explore manually:",
         "  projects",
@@ -173,7 +168,8 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
       return move;
     }
 
-    return dispatchCommand(state, "open", [`${slug}/index.txt`]);
+    const result = dispatchCommand(state, "open", [`${slug}/index.txt`]);
+    return { ...result, animate: true };
   }
 
   if (command === "dir") {
@@ -219,6 +215,10 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
     return { output: "ASCII-OS version 0.1.0" };
   }
 
+  if (command === "aoc") {
+    return { output: "Starting ASCII-OS Commander...", aocMode: true };
+  }
+
   if (command === "date") {
     const now = new Date();
     const yyyy = String(now.getUTCFullYear());
@@ -242,12 +242,55 @@ const runAlias = (state: SystemState, command: string, args: string[]): CommandR
 
     const template = args.join(" ");
     if (template.toLowerCase() === "default") {
-      setPromptTemplate(state, defaultPromptTemplate);
-      return { output: `Prompt template set to ${defaultPromptTemplate}` };
+      setPromptTemplate(state, DEFAULT_CONFIG.promptTemplate);
+      return { output: `Prompt template set to ${DEFAULT_CONFIG.promptTemplate}` };
     }
 
     setPromptTemplate(state, template);
     return { output: `Prompt template set to ${template}` };
+  }
+
+  if (command === "set") {
+    if (args.length === 0) {
+      return {
+        output: [
+          "System Configuration:",
+          `  screenMode:      ${state.config.screenMode}`,
+          `  promptTemplate:  ${state.config.promptTemplate}`,
+          `  theme:           ${state.config.theme}`
+        ].join("\n")
+      };
+    }
+
+    if (args.length < 2) {
+      return { output: "Usage: set <key> <value>" };
+    }
+
+    const [key, ...valueParts] = args;
+    const value = valueParts.join(" ");
+
+    if (key === "screenMode") {
+      if (value === "cga" || value === "ega" || value === "vga") {
+        setScreenMode(state, value);
+        return { output: `screenMode set to ${value}`, screenMode: value };
+      }
+      return { output: "Error: screenMode must be cga, ega, or vga" };
+    }
+
+    if (key === "promptTemplate") {
+      setPromptTemplate(state, value);
+      return { output: `promptTemplate set to ${value}` };
+    }
+
+    if (key === "theme") {
+      if (SUPPORTED_THEMES.includes(value)) {
+        state.config.theme = value;
+        return { output: `theme set to ${value}`, theme: value };
+      }
+      return { output: `Error: Supported themes are: ${SUPPORTED_THEMES.join(", ")}` };
+    }
+
+    return { output: `Unknown configuration key: ${key}` };
   }
 
   return null;
@@ -294,7 +337,12 @@ export const runCliCommand = (state: SystemState, command: string, args: string[
       "Prompt:",
       "  prompt              Show current prompt template",
       "  prompt <template>   Set prompt template",
-      "  prompt default      Restore default prompt"
+      "  prompt default      Restore default prompt",
+      "",
+      "Configuration:",
+      "  set                 Show current system configuration",
+      "  set <key> <value>   Update configuration (screenMode, promptTemplate, theme)",
+      `                      Themes: ${SUPPORTED_THEMES.join(", ")}`
     ].join("\n");
 
     return {

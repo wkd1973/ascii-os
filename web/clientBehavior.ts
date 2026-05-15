@@ -10,18 +10,24 @@ export type WebCommandResponse = {
   reboot?: boolean;
   rebootLines?: string[];
   screenMode?: string | null;
+  theme?: string | null;
   output?: string;
   prompt?: string;
   exit?: boolean;
+  animate?: boolean;
+  aocMode?: boolean;
 };
 
 export type RenderAction =
   | { type: "clear" }
-  | { type: "append"; text: string }
+  | { type: "reboot"; lines: string[] }
+  | { type: "append"; text: string; animate?: boolean }
   | { type: "appendHelp"; text: string }
   | { type: "screenMode"; mode: string }
+  | { type: "theme"; theme: string }
   | { type: "prompt"; text: string }
-  | { type: "disableInput" };
+  | { type: "disableInput" }
+  | { type: "aocMode" };
 
 export type StoredWebSession = {
   sessionId: string;
@@ -115,22 +121,30 @@ export const planCommandResponseRender = (command: string, response: WebCommandR
   }
 
   if (response.reboot && Array.isArray(response.rebootLines)) {
-    for (const line of response.rebootLines) {
-      actions.push({ type: "append", text: line });
-    }
-    actions.push({ type: "append", text: "" });
+    actions.push({ type: "reboot", lines: response.rebootLines });
+  }
+
+  if (response.aocMode) {
+    actions.push({ type: "aocMode" });
   }
 
   if (response.screenMode) {
     actions.push({ type: "screenMode", mode: response.screenMode });
   }
 
+  if (response.theme) {
+    actions.push({ type: "theme", theme: response.theme });
+  }
+
   if (response.output) {
-    actions.push(
-      shouldRenderHelpPanel(command)
-        ? { type: "appendHelp", text: response.output }
-        : { type: "append", text: response.output }
-    );
+    const action: RenderAction = shouldRenderHelpPanel(command)
+      ? { type: "appendHelp", text: response.output }
+      : { type: "append", text: response.output };
+
+    if (action.type === "append" && response.animate) {
+      action.animate = true;
+    }
+    actions.push(action);
   }
 
   if (!response.clear) {

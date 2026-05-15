@@ -26,7 +26,6 @@ test("help output groups filesystem and session commands", () => {
 
   assert.ok(result.output.includes("Core filesystem commands:"));
   assert.ok(result.output.includes("Session commands:"));
-  assert.ok(result.output.includes("write <path> <text>"));
   assert.ok(result.output.includes("quit"));
 });
 
@@ -35,7 +34,7 @@ test("ls returns sorted children for current directory", () => {
 
   const result = dispatchCommand(state, "ls", []);
 
-  assert.equal(result.output, "about/\ncv/\nhome/\nprojects/\nsystem/");
+  assert.equal(result.output, "about/\ncv/\nhome/\nlogs/\nprojects/\nsystem/");
 });
 
 test("open returns file content", () => {
@@ -120,7 +119,7 @@ test("dispatchCommand is case-insensitive and reports unknown command", () => {
   const upper = dispatchCommand(state, "LS", []);
   const unknown = dispatchCommand(state, "foo", []);
 
-  assert.equal(upper.output, "about/\ncv/\nhome/\nprojects/\nsystem/");
+  assert.equal(upper.output, "about/\ncv/\nhome/\nlogs/\nprojects/\nsystem/");
   assert.equal(unknown.output, "Unknown command: foo. Type 'help'.");
 });
 
@@ -207,6 +206,14 @@ test("runCommand splits by whitespace and executes command", () => {
   assert.equal(getCwd(state), "/home");
 });
 
+test("runCommand handles quoted arguments with spaces", () => {
+  const state = createInitialState();
+  
+  // Use open with quotes on existing file
+  const openResult = runCommand(state, 'open "/home/file name.txt"');
+  assert.equal(openResult.output.trim(), "Quoted path parsing works.");
+});
+
 test("open and cat can access file names with spaces via dispatch args", () => {
   const state = createInitialState();
   dispatchCommand(state, "cd", ["/home"]);
@@ -247,81 +254,6 @@ test("custom registry supports plugin commands", () => {
   const result = dispatchFromRegistry(registry, state, "ECHO", ["ascii", "os"]);
 
   assert.equal(result.output, "ascii os");
-});
-
-test("mkdir creates directory and ls shows it", () => {
-  const state = createInitialState();
-
-  const create = dispatchCommand(state, "mkdir", ["/home/newdir"]);
-  const list = dispatchCommand(state, "ls", ["/home"]);
-
-  assert.equal(create.output, "");
-  assert.ok(list.output.split("\n").includes("newdir/"));
-});
-
-test("mkdir reports existing path and parent errors", () => {
-  const state = createInitialState();
-
-  const existing = dispatchCommand(state, "mkdir", ["/home"]);
-  const missingParent = dispatchCommand(state, "mkdir", ["/missing/newdir"]);
-
-  assert.equal(existing.output, "mkdir: /home: already exists");
-  assert.equal(
-    missingParent.output,
-    "mkdir: cannot create directory '/missing/newdir': No such parent directory"
-  );
-});
-
-test("touch creates an empty file", () => {
-  const state = createInitialState();
-
-  const create = dispatchCommand(state, "touch", ["/home/note.txt"]);
-  const open = dispatchCommand(state, "open", ["/home/note.txt"]);
-
-  assert.equal(create.output, "");
-  assert.equal(open.output, "");
-});
-
-test("touch errors for directory path and missing parent", () => {
-  const state = createInitialState();
-
-  const directory = dispatchCommand(state, "touch", ["/home"]);
-  const missingParent = dispatchCommand(state, "touch", ["/missing/note.txt"]);
-
-  assert.equal(directory.output, "touch: /home: Is a directory");
-  assert.equal(
-    missingParent.output,
-    "touch: cannot create file '/missing/note.txt': No such parent directory"
-  );
-});
-
-test("write creates file and overwrites content", () => {
-  const state = createInitialState();
-
-  const create = dispatchCommand(state, "write", ["/home/log.txt", "hello", "ascii"]);
-  const openFirst = dispatchCommand(state, "open", ["/home/log.txt"]);
-  const overwrite = dispatchCommand(state, "write", ["/home/log.txt", "updated"]);
-  const openSecond = dispatchCommand(state, "open", ["/home/log.txt"]);
-
-  assert.equal(create.output, "");
-  assert.equal(openFirst.output, "hello ascii");
-  assert.equal(overwrite.output, "");
-  assert.equal(openSecond.output, "updated");
-});
-
-test("write usage and directory errors", () => {
-  const state = createInitialState();
-
-  const usage = dispatchCommand(state, "write", ["/home/log.txt"]);
-  const directory = dispatchCommand(state, "write", ["/home", "hello"]);
-  const missingParent = dispatchCommand(state, "write", ["/missing/log.txt", "hello"]);
-
-  assert.equal(usage.output, "write: usage: write <path> <content>");
-  assert.equal(directory.output, "write: /home: Is a directory");
-  assert.equal(
-    missingParent.output,
-    "write: cannot write '/missing/log.txt': No such parent directory"
-  );
 });
 
 test("clear returns clear flag", () => {

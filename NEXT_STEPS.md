@@ -2,51 +2,31 @@
 
 ## Status
 
-The low-cost DOS-style batch is already implemented in the CLI and web layers:
+The ASCII-OS project is in a highly interactive and atmospheric state:
+- **Atmospheric UX**: CRT effects (scanlines, flicker), retro audio, and a high-contrast integrated scrollbar.
+- **Mobile Optimized**: Robust Virtual Touch Bar integrated as a divider in AOC view, ensuring full control on touch devices.
+- **AOC (ASCII-OS Commander)**: Dual-pane file manager with optimized flexbox layout and integrated touch controls.
+- **VFS & Content**: Structured read-only portfolio content with ubiquitous quoted-argument support.
+- **Stability**: Comprehensive test suite (74 tests), all PASS.
 
-- `dir`
-- `type`
-- `ver`
-- `date`
-- `time`
-- `whoami`
-- `shutdown`
-- `mode`
-- `prompt`
+## Immediate Priority (Technical Debt)
 
-The next work should focus on durability and structure instead of adding more shell sugar.
+1. **AOC Unit Tests**: Expand test coverage to include AOC's specific logic (pane switching, selection).
 
-## Best Product Step
+## Best Product Steps
 
-1. Build a real `config` system, for example `/system/config.txt` or a `set` command, to store:
-   - active screen mode,
-   - terminal color,
-   - prompt style,
-   - startup behavior.
-2. Add session persistence in `localStorage` so the web terminal keeps state after refresh.
-3. Add a bottom status bar inspired by Norton Commander or DOS shell.
-4. Add a startup sequence with delays and a simple boot-log animation in web.
+1. **AOC Markdown Preview**: [COMPLETED] Implement light Markdown rendering (bold, lists, headers) in the AOC preview pane.
+2. **The `run` command**: Add a CLI command to open external links (e.g., GitHub, live demos) in a new browser tab.
+3. **Mobile Gestures**: [COMPLETED] Relocated Touch Bar into AOC view for better ergonomic flow.
 
-## Best Technical Step
+## Best Technical Steps
 
-1. Split the web terminal UI out of `server.ts` into a dedicated HTML/CSS/JS renderer.
-2. Add tests for frontend behavior:
-   - history navigation,
-   - `clear`,
-   - `reboot`,
-   - mode switching,
-   - prompt updates.
-3. Clean up the command model:
-   - engine commands,
-   - DOS aliases,
-   - portfolio aliases,
-   - diagnostic commands.
+1. **Audio Optimization**: Improve `AudioContext` management and sound quality of the synthesized "floppy crunch".
+2. **PWA Support**: Add a web manifest and service worker to make ASCII-OS installable as a standalone app.
+3. **AOC Unit Tests**: Expand test coverage to include AOC's specific logic (pane switching, selection).
 
 ## Recommended Next Batch
 
-If the next goal is the biggest product gain with reasonable implementation cost, the best batch is:
+- **Mobile Gestures** (UX improvement for touch).
+- **The `run` command** (Practical utility for portfolio).
 
-- config system
-- `localStorage` session persistence
-- renderer split
-- frontend behavior tests

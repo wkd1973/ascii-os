@@ -91,9 +91,7 @@ test("web client plans reboot response rendering", () => {
     }),
     [
       { type: "clear" },
-      { type: "append", text: "REBOOTING ASCII-OS WEB..." },
-      { type: "append", text: "WELCOME, OPERATOR" },
-      { type: "append", text: "" },
+      { type: "reboot", lines: ["REBOOTING ASCII-OS WEB...", "WELCOME, OPERATOR"] },
       { type: "screenMode", mode: "vga" },
       { type: "prompt", text: "[/home]>" }
     ]

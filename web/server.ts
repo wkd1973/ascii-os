@@ -1,8 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import { getPromptTemplate, getScreenMode, renderPrompt, runCliCommand, setPromptTemplate, setScreenMode } from "../cli/aliases";
-import { parseArgs } from "../cli/parser";
+import { parseArgs } from "../engine/parser";
 import { dispatchCommand } from "../engine/commands";
+import { getDirectoryAtPath, getNodeAtPath } from "../engine/path";
 import { createInitialState, getCwd, type SystemState } from "../engine/state";
 import { renderWebPage } from "./renderPage";
 
@@ -71,22 +72,30 @@ const handleInit = (res: ServerResponse, context: WebServerContext): void => {
   cleanupExpiredSessions(context);
   const state = createInitialState();
   const sessionId = randomUUID();
-  setScreenMode(state, "cga");
-  setPromptTemplate(state, getPromptTemplate(state));
   context.sessions.set(sessionId, { state, lastSeen: context.now() });
 
   const motd = dispatchCommand(state, "open", ["/system/motd.txt"]);
+  const version = "ASCII-OS BIOS v1.0.7-DEBUG (C) 1973-2026";
+  // eslint-disable-next-line no-console
+  console.log(`[INIT] Sending BIOS version: ${version}`);
   dispatchCommand(state, "cd", ["/home"]);
 
   sendJson(res, 200, {
     sessionId,
     cwd: getCwd(state),
     screenMode: getScreenMode(state),
+    theme: state.config.theme,
     prompt: renderPrompt(state),
     lines: [
-      "BOOTING ASCII-OS WEB...",
-      "LOADING CONTENT FROM /content/data...",
+      version,
+      "CPU: CORE-8086 AT 4.77MHz",
+      "MEMORY TEST: 640KB OK",
+      "",
+      "LOADING KERNEL...",
+      "LOADING FILE SYSTEM...",
+      "CONTENT LOADED FROM /content/data",
       "INITIALIZING USER SESSION...",
+      "",
       "WELCOME, OPERATOR",
       "",
       motd.output
@@ -123,18 +132,24 @@ const handleCommand = async (req: IncomingMessage, res: ServerResponse, context:
   let rebootLines: string[] = [];
 
   if (result.reboot) {
-    const preservedMode = getScreenMode(session.state);
-    const preservedPromptTemplate = getPromptTemplate(session.state);
+    const preservedConfig = { ...session.state.config };
     const freshState = createInitialState();
-    setScreenMode(freshState, preservedMode);
-    setPromptTemplate(freshState, preservedPromptTemplate);
+    freshState.config = preservedConfig;
     session.state = freshState;
     const motd = dispatchCommand(freshState, "open", ["/system/motd.txt"]);
     dispatchCommand(freshState, "cd", ["/home"]);
     rebootLines = [
-      "REBOOTING ASCII-OS WEB...",
-      "LOADING CONTENT FROM /content/data...",
+      "SYSTEM REBOOT INITIATED...",
+      "",
+      "ASCII-OS BIOS v1.0.7-DEBUG (C) 1973-2026",
+      "CPU: CORE-8086 AT 4.77MHz",
+      "MEMORY TEST: 640KB OK",
+      "",
+      "LOADING KERNEL...",
+      "LOADING FILE SYSTEM...",
+      "CONTENT LOADED FROM /content/data",
       "INITIALIZING USER SESSION...",
+      "",
       "WELCOME, OPERATOR",
       "",
       motd.output
@@ -148,9 +163,70 @@ const handleCommand = async (req: IncomingMessage, res: ServerResponse, context:
     exit: result.exit === true,
     clear: result.clear === true,
     reboot: result.reboot === true,
+    animate: result.animate === true,
+    aocMode: result.aocMode === true,
     rebootLines,
-    screenMode: result.screenMode ?? (result.reboot ? getScreenMode(session.state) : null)
+    screenMode: result.screenMode ?? (result.reboot ? getScreenMode(session.state) : null),
+    theme: result.theme ?? (result.reboot ? session.state.config.theme : null)
   });
+};
+
+const handleAoc = async (req: IncomingMessage, res: ServerResponse, context: WebServerContext): Promise<void> => {
+  cleanupExpiredSessions(context);
+  const body = await readJson(req);
+  const sessionId = typeof body.sessionId === "string" ? body.sessionId : "";
+  const session = context.sessions.get(sessionId);
+  if (!session) {
+    sendJson(res, 400, { error: "Invalid session" });
+    return;
+  }
+  touchSession(session, context.now);
+
+  const action = typeof body.action === "string" ? body.action : "list";
+  const path = typeof body.path === "string" ? body.path : getCwd(session.state);
+
+  if (action === "list") {
+    const dir = getDirectoryAtPath(session.state.root, path);
+    if (!dir) {
+      sendJson(res, 404, { error: "Not a directory" });
+      return;
+    }
+
+    const entries = Object.entries(dir.children)
+      .map(([name, node]) => ({ name, isDir: node.kind === "dir" }))
+      .sort((a, b) => {
+        if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+
+    if (path !== "/") {
+      entries.unshift({ name: "..", isDir: true });
+    }
+
+    sendJson(res, 200, { entries, path });
+    return;
+  }
+
+  if (action === "preview") {
+    const itemPath = typeof body.itemPath === "string" ? body.itemPath : path;
+    const node = getNodeAtPath(session.state.root, itemPath);
+    if (!node) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+
+    let preview = "";
+    if (node.kind === "dir") {
+      preview = dispatchCommand(session.state, "tree", [itemPath]).output;
+    } else {
+      preview = node.content;
+    }
+
+    sendJson(res, 200, { preview });
+    return;
+  }
+
+  sendJson(res, 400, { error: "Unknown action" });
 };
 
 export const createWebServer = (options: WebServerOptions = {}) => {
@@ -190,6 +266,11 @@ export const createWebServer = (options: WebServerOptions = {}) => {
       return;
     }
 
+    if (req.method === "POST" && req.url === "/api/aoc") {
+      await handleAoc(req, res, context);
+      return;
+    }
+
     res.statusCode = 404;
     res.end("Not found");
   } catch (error: unknown) {
@@ -203,6 +284,12 @@ if (require.main === module) {
   const server = createWebServer();
   server.listen(PORT, () => {
     // eslint-disable-next-line no-console
-    console.log(`ascii-os web listening on http://localhost:${PORT}`);
+    console.log("========================================");
+    // eslint-disable-next-line no-console
+    console.log(`ASCII-OS WEB SERVER STARTING ON PORT ${PORT}`);
+    // eslint-disable-next-line no-console
+    console.log("VFS TELEMETRY ENABLED");
+    // eslint-disable-next-line no-console
+    console.log("========================================");
   });
 }

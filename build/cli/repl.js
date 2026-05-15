@@ -8,7 +8,7 @@ const node_process_1 = require("node:process");
 const commands_1 = require("../engine/commands");
 const state_1 = require("../engine/state");
 const aliases_1 = require("./aliases");
-const parser_1 = require("./parser");
+const parser_1 = require("../engine/parser");
 let state = (0, state_1.createInitialState)();
 const rl = node_readline_1.default.createInterface({
     input: node_process_1.stdin,
