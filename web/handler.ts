@@ -278,29 +278,33 @@ export const createWebHandler = (options: { sessionTtlMs?: number; now?: () => n
         return;
       }
 
-      if (req.method === "GET" && req.url === "/") {
+      // Use a dummy base to parse the URL and get the pathname
+      const url = new URL(req.url, "http://localhost");
+      const { pathname } = url;
+
+      if (req.method === "GET" && pathname === "/") {
         res.statusCode = 200;
         res.setHeader("content-type", "text/html; charset=utf-8");
         res.end(renderWebPage());
         return;
       }
 
-      if (req.method === "GET" && req.url === "/health") {
+      if (req.method === "GET" && pathname === "/health") {
         handleHealth(res, context);
         return;
       }
 
-      if (req.method === "POST" && req.url === "/api/init") {
+      if (req.method === "POST" && pathname === "/api/init") {
         handleInit(res, context);
         return;
       }
 
-      if (req.method === "POST" && req.url === "/api/command") {
+      if (req.method === "POST" && pathname === "/api/command") {
         await handleCommand(req, res, context);
         return;
       }
 
-      if (req.method === "POST" && req.url === "/api/aoc") {
+      if (req.method === "POST" && pathname === "/api/aoc") {
         await handleAoc(req, res, context);
         return;
       }
