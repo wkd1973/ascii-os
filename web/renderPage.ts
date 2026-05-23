@@ -7,6 +7,7 @@ export const renderWebPage = (): string => `<!doctype html>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ascii-os web</title>
+  <script defer src="/_vercel/insights/script.js"></script>
   <style>${webStyles}</style>
 </head>
 <body>
