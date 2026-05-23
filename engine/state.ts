@@ -17,6 +17,11 @@ export type SystemState = {
   config: SystemConfig;
 };
 
+export type SerializableState = {
+  cwd: string;
+  config: SystemConfig;
+};
+
 export const DEFAULT_CONFIG: SystemConfig = {
   screenMode: "cga",
   promptTemplate: "ascii-os:[$p]$g$s",
@@ -61,6 +66,18 @@ export const createInitialState = (): SystemState => {
     config
   };
 };
+
+export const createStatelessState = (serializable: SerializableState): SystemState => {
+  const state = createInitialState();
+  state.cwd = serializable.cwd;
+  state.config = serializable.config;
+  return state;
+};
+
+export const toSerializableState = (state: SystemState): SerializableState => ({
+  cwd: state.cwd,
+  config: state.config
+});
 
 export const getCwd = (state: SystemState): string => state.cwd;
 

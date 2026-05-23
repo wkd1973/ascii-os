@@ -1,15 +1,6 @@
 Name: Izyda
-Description: Kompleksowy system informatyczny do obsługi faktoringu.
-Domain: Finanse / faktoring
-Status: System wewnętrzny / historyczny
-Role: Programista .NET / utrzymanie i rozwój
-Stack: C#, ASP.NET, MSSQL [do uzupełnienia]
-Zakres odpowiedzialności:
-- Utrzymanie i rozwój logiki faktoringowej end-to-end
-- Wsparcie procesu od wpłynięcia faktury do wypłaty i rozliczenia
-- [do uzupełnienia]
-Opis:
-- System obsługuje pełny cykl przetwarzania faktur: od wpłynięcia do systemu, przez wypłatę środków, naliczanie opłat i odsetek, aż po spłatę i regres.
-Uwagi:
-- [do uzupełnienia]
-Link: [do uzupełnienia]
+Description: Kompleksowy system do obsługi faktoringu, automatyzujący procesy od wpłynięcia faktury po regres i spłatę.
+Status: Production / Active
+Role: Główny inżynier / End-to-End delivery
+Stack: .NET, C#, MSSQL
+Zakres odpowiedzialności: Rozwój logiki biznesowej, naliczanie opłat i odsetek, utrzymanie SLA.

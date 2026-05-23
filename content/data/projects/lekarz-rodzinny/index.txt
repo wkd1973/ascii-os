@@ -1,0 +1,6 @@
+Name: Lekarz Rodzinny
+Description: Oprogramowanie do kompleksowej obsługi gabinetu lekarza rodzinnego.
+Stack: Delphi, Paradox / BDE
+Role: Developer
+Status: Historical
+Zakres odpowiedzialności: Projektowanie i implementacja modułów terminarza, ewidencji wizyt, statystyk oraz raportowania medycznego.

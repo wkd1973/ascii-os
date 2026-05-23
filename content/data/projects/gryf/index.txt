@@ -1,15 +1,6 @@
-Name: GRYF
-Description: Podsystem do raportowania transakcji podejrzanych i ponadlimitowych.
-Domain: Compliance / bankowość
-Status: System wewnętrzny / historyczny
-Role: Programista / utrzymanie i rozwój
-Stack: C#, ASP.NET, raportowanie [do uzupełnienia]
-Zakres odpowiedzialności:
-- Wsparcie raportowania transakcji do GIIF
-- Utrzymanie zgodności z wymaganiami regulacyjnymi
-- [do uzupełnienia]
-Opis:
-- Podsystem realizował ustawowy obowiązek raportowania transakcji do GIIF.
-Uwagi:
-- [do uzupełnienia]
-Link: [do uzupełnienia]
+Name: Gryf
+Description: Podsystem realizujący ustawowy obowiązek raportowania transakcji podejrzanych do GIIF.
+Status: Historical / Production
+Role: Architekt / Developer
+Stack: .NET / Delphi
+Zakres odpowiedzialności: Raportowanie transakcji przekraczających limity, integracja z GIIF.

@@ -1,0 +1,6 @@
+Name: G-MAM
+Description: Zaawansowany system do zarządzania materiałami emisyjnymi (video) dla stacji telewizyjnych.
+Stack: .NET / Bazy relacyjne
+Role: Developer
+Status: Historical
+Zakres odpowiedzialności: Zarządzanie potężnym cyklem życia cyfrowych zasobów wideo (MAM - Media Asset Management).

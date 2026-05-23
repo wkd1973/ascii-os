@@ -1,15 +1,6 @@
 Name: Limes
-Description: System do wydajnego przetwarzania cash pooli.
-Domain: Finanse / optymalizacja przepływów
-Status: System wewnętrzny / historyczny
-Role: Programista / utrzymanie i rozwój
-Stack: C#, ASP.NET, optymalizacja procesów [do uzupełnienia]
-Zakres odpowiedzialności:
-- Wydajne przetwarzanie struktur cash poolingowych
-- Rozwój i utrzymanie logiki przetwarzania finansowego
-- [do uzupełnienia]
-Opis:
-- Rozwiązanie nastawione na sprawne przetwarzanie i optymalizację struktur cash poolingowych.
-Uwagi:
-- [do uzupełnienia]
-Link: [do uzupełnienia]
+Description: System do wydajnego przetwarzania mechanizmów Cash Pool.
+Status: Historical / Production
+Role: Architekt / Developer
+Stack: .NET / Delphi
+Zakres odpowiedzialności: Przetwarzanie płynności finansowej (Cash Pooling).

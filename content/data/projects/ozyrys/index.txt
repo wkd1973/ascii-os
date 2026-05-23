@@ -1,15 +1,6 @@
 Name: Ozyrys
-Description: System automatyzujący przetwarzanie płatności i obsługę zleceń stałych.
-Domain: Bankowość / automatyzacja płatności
-Status: System wewnętrzny / historyczny
-Role: Programista / utrzymanie i rozwój
-Stack: C#, ASP.NET, integracje bankowe [do uzupełnienia]
-Zakres odpowiedzialności:
-- Automatyzacja przetwarzania płatności
-- Obsługa interfejsów do systemów bankowych
-- [do uzupełnienia]
-Opis:
-- System posiadał gotowe interfejsy do systemów bankowych i wspierał obsługę zleceń stałych.
-Uwagi:
-- [do uzupełnienia]
-Link: [do uzupełnienia]
+Description: Automatyzacja procesów przetwarzania płatności, interfejsy bankowe i obsługa zleceń stałych.
+Status: Historical / Production
+Role: Architekt / Developer
+Stack: .NET / Delphi
+Zakres odpowiedzialności: Budowa architektury systemowej, automatyzacja płatności.

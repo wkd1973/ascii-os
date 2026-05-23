@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCwd = exports.getCwd = exports.createInitialState = exports.DEFAULT_CONFIG = void 0;
+exports.setCwd = exports.getCwd = exports.toSerializableState = exports.createStatelessState = exports.createInitialState = exports.DEFAULT_CONFIG = void 0;
 const fs_1 = require("../content/fs");
 const loader_1 = require("../content/loader");
 const path_1 = require("./path");
@@ -44,6 +44,18 @@ const createInitialState = () => {
     };
 };
 exports.createInitialState = createInitialState;
+const createStatelessState = (serializable) => {
+    const state = (0, exports.createInitialState)();
+    state.cwd = serializable.cwd;
+    state.config = serializable.config;
+    return state;
+};
+exports.createStatelessState = createStatelessState;
+const toSerializableState = (state) => ({
+    cwd: state.cwd,
+    config: state.config
+});
+exports.toSerializableState = toSerializableState;
 const getCwd = (state) => state.cwd;
 exports.getCwd = getCwd;
 const setCwd = (state, cwd) => {

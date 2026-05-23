@@ -30,6 +30,10 @@ body.theme-bw .wrap { border-color: #ffffff; background: #000000; }
 body.theme-pearl .wrap { border-color: #2b2b2b; background: #D0AE54; }
 
 .head { padding:10px 12px; background:#081c15; color:var(--accent); border-bottom:1px solid #2d6a4f; display:flex; justify-content:space-between; align-items:center; flex-shrink: 0; }
+.head-brand { display:flex; gap:1ch; align-items:center; }
+.head-sep { color:var(--muted); font-weight:normal; opacity:0.5; }
+.head-link { color:var(--accent); text-decoration:none; font-weight:bold; font-size:14px; text-transform:uppercase; letter-spacing:1px; border:1px solid transparent; padding:2px 6px; transition: all 0.2s; }
+.head-link:hover { background:var(--accent); color:var(--bg); }
 body.theme-blue .head { background: #0000aa; border-bottom-color: #ffffff; }
 body.theme-bw .head { background: #000000; border-bottom-color: #ffffff; }
 body.theme-pearl .head { background: #D0AE54; border-bottom-color: #2b2b2b; }

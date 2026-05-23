@@ -1,0 +1,6 @@
+Name: Oprogramowanie Edukacyjne "Geniusz"
+Description: Pakiet gier edukacyjnych dla dzieci oraz programów wspomagających naukę (m.in. "Elektroniczna ortografia", multimedialne testy dla maturzystów).
+Stack: Delphi, BlitzBasic, BlitzMax, Flash, biblioteka SDL
+Role: Twórca oprogramowania multimedialnego
+Status: Historical
+Zakres odpowiedzialności: Pełny cykl tworzenia interaktywnego oprogramowania multimedialnego i edukacyjnego na płyty CD/DVD.

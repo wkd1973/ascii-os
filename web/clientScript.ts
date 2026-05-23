@@ -9,10 +9,10 @@ const getScreenModeClass = (mode) => {
   return "mode-cga";
 };
 const shouldRenderHelpPanel = (command) => command.trim().toLowerCase() === "help";
-const storageKey = "ascii-os:web-session";
-const serializeStoredWebSession = (sessionId, history) => JSON.stringify({
-  version: 1,
-  sessionId,
+const storageKey = "ascii-os:web-session-v2";
+const serializeStoredWebSession = (state, history) => JSON.stringify({
+  version: 2,
+  state,
   history
 });
 const parseStoredWebSession = (raw) => {
@@ -22,17 +22,17 @@ const parseStoredWebSession = (raw) => {
 
   try {
     const data = JSON.parse(raw);
-    if (data.version !== 1) {
+    if (data.version !== 2) {
       return null;
     }
 
-    const sessionId = typeof data.sessionId === "string" ? data.sessionId : "";
+    const state = (data.state && typeof data.state === "object") ? data.state : null;
     const history = Array.isArray(data.history) ? data.history.filter((entry) => typeof entry === "string") : [];
-    if (!sessionId) {
+    if (!state) {
       return null;
     }
 
-    return { sessionId, history };
+    return { state, history };
   } catch {
     return null;
   }
@@ -44,9 +44,9 @@ const readStoredSession = () => {
     return null;
   }
 };
-const writeStoredSession = (sessionId, history) => {
+const writeStoredSession = (state, history) => {
   try {
-    window.localStorage.setItem(storageKey, serializeStoredWebSession(sessionId, history));
+    window.localStorage.setItem(storageKey, serializeStoredWebSession(state, history));
   } catch {
   }
 };
@@ -109,7 +109,7 @@ const planCommandResponseRender = (command, response) => {
 export const clientScript = `
 ${clientBehaviorScript}
 
-let sessionId = null;
+let systemState = null;
 const commandHistory = [];
 let historyIndex = 0;
 const screen = document.getElementById("screen");
@@ -207,11 +207,14 @@ const updateAocActivePane = () => {
 
 const fetchAocList = async (path, selectName) => {
   if (path) {
-    await post("/api/command", { sessionId, input: "cd " + path });
+    const data = await post("/api/command", { state: systemState, input: "cd " + path });
+    if (data.state) systemState = data.state;
   }
-  const data = await post("/api/aoc", { sessionId, action: "list" });
+  const data = await post("/api/aoc", { state: systemState, action: "list" });
   aocItems = data.entries;
   aocCurrentPath = data.path;
+  if (data.state) systemState = data.state;
+
   if (aocLeftTitle) {
     aocLeftTitle.textContent = aocCurrentPath;
   }
@@ -288,7 +291,8 @@ const fetchAocPreview = async () => {
     itemPath = "/" + parts.join("/");
   }
 
-  const data = await post("/api/aoc", { sessionId, action: "preview", itemPath });
+  const data = await post("/api/aoc", { state: systemState, action: "preview", itemPath });
+  if (data.state) systemState = data.state;
   
   if (item.isDir || item.name.endsWith(".txt") || item.name.endsWith(".md")) {
     aocPreview.innerHTML = renderMarkdown(data.preview);
@@ -525,8 +529,8 @@ const appendBootLines = async (lines, fast = false) => {
 };
 
 const restoreSession = async (storedSession) => {
-  const data = await post("/api/command", { sessionId: storedSession.sessionId, input: "" });
-  sessionId = storedSession.sessionId;
+  const data = await post("/api/command", { state: storedSession.state, input: "" });
+  systemState = data.state || storedSession.state;
   commandHistory.splice(0, commandHistory.length, ...storedSession.history);
   historyIndex = commandHistory.length;
   if (data.screenMode) {
@@ -537,12 +541,12 @@ const restoreSession = async (storedSession) => {
   }
   setPrompt(data.prompt);
   await appendBootLines(["RESTORED ASCII-OS WEB SESSION...", "", "WELCOME BACK, OPERATOR"]);
-  writeStoredSession(sessionId, commandHistory);
+  writeStoredSession(systemState, commandHistory);
 };
 
 const startFreshSession = async () => {
   const data = await post("/api/init");
-  sessionId = data.sessionId;
+  systemState = data.state;
   commandHistory.splice(0, commandHistory.length);
   historyIndex = 0;
   if (data.screenMode) {
@@ -553,7 +557,7 @@ const startFreshSession = async () => {
   }
   setPrompt(data.prompt);
   await appendBootLines(data.lines);
-  writeStoredSession(sessionId, commandHistory);
+  writeStoredSession(systemState, commandHistory);
   await execCommand("aoc");
 };
 
@@ -583,12 +587,15 @@ const execCommand = async (command) => {
   commandHistory.push(command);
   historyIndex = commandHistory.length;
   appendBlock(promptEl.textContent + command);
-  writeStoredSession(sessionId, commandHistory);
+  writeStoredSession(systemState, commandHistory);
   input.value = "";
   scrollToBottom();
   
   try {
-    const data = await post("/api/command", { sessionId, input: command });
+    const data = await post("/api/command", { state: systemState, input: command });
+    if (data.state) systemState = data.state;
+    writeStoredSession(systemState, commandHistory);
+
     for (const action of planCommandResponseRender(command, data)) {
       if (action.type === "clear") {
         clearOutput();
@@ -724,6 +731,14 @@ input.addEventListener("keydown", (e) => {
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   execCommand(input.value);
+});
+
+const aocLink = document.getElementById("aoc-link");
+aocLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!isAocMode) {
+    execCommand("aoc");
+  }
 });
 
 boot().catch((err) => {

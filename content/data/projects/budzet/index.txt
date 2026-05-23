@@ -1,0 +1,6 @@
+Name: Budzet
+Description: Program do obsługi jednostek samorządu terytorialnego (planowanie, zmiany, wykonanie budżetu).
+Stack: Delphi, Paradox / BDE
+Role: Architekt / Developer
+Status: Historical
+Zakres odpowiedzialności: Tworzenie oprogramowania do zarządzania finansami publicznymi, zgodnego z rygorystycznymi przepisami Ministerstwa Finansów.

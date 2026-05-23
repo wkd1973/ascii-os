@@ -1,0 +1,6 @@
+Name: SafeFly
+Description: System wspierający ciągłą zdatność do lotu ultralekkich statków powietrznych.
+Stack: .NET / Architektura Klient-Serwer
+Role: Architekt / Lead Developer
+Status: Historical
+Zakres odpowiedzialności: Umożliwienie przepływu krytycznych informacji między właścicielem, pilotem, mechanikiem oraz producentem w zakresie bezpieczeństwa lotu.

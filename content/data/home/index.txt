@@ -18,5 +18,4 @@ What each path does:
 Direct examples:
 - project ascii-os
 - project izyda
-- project peocash
 - project <slug>

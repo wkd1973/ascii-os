@@ -1,0 +1,6 @@
+Name: PSIP
+Description: Oprogramowanie obsługi linii produkcyjnej dla firmy Ferrero.
+Stack: .NET / C#
+Role: Developer
+Status: Historical
+Zakres odpowiedzialności: Integracja oprogramowania z urządzeniami przemysłowymi (paletyzator, sieciowa drukarka przemysłowa) w systemie pracy ciągłej.

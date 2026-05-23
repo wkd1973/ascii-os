@@ -1,37 +1,49 @@
-# CV WOJCIECH DOBROWOLSKI
+============================================================
+           WOJCIECH DOBROWOLSKI - SYSTEM ARCHITECT
+============================================================
 
-Kontakt:
-**Telefon:** 792 925 130
-**Email:** wojciech.krzysztof.dobrowolski@gmail.com
+> STATUS: Senior Expert .NET / Delphi / Web
+> EXPERIENCE: ~30 Years of Commercial Development
+> DOMAINS: Finance, Aviation, Industry, Gov, Health, Media
 
-# Profil zawodowy:
-Ekspert .NET z niemal 30-letnim stażem komercyjnym w branży IT. Specjalizuję się w projektowaniu, utrzymaniu i rozwoju krytycznych systemów finansowych, w tym zaawansowanych aplikacji bankowych. Łączę backend, frontend i odpowiedzialność za cały cykl dostarczenia rozwiązania.
+------------------------------------------------------------
+[ PROFIL ZAWODOWY ]
+------------------------------------------------------------
+Ekspert IT z unikalnym doświadczeniem w budowie systemów 
+krytycznych. Specjalista od wysokiej dostępności (SLA) 
+w sektorze bankowym, z silnymi fundamentami w automatyce 
+przemysłowej, bezpieczeństwie lotniczym oraz multimediach.
 
-Umiejętności techniczne:
+------------------------------------------------------------
+[ CORE TECH STACK ]
+------------------------------------------------------------
+BACKEND:  C#, .NET Core, ASP.NET MVC, Delphi, PHP
+FRONTEND: TypeScript, JavaScript, Angular, HTML5, CSS3
+DATA:     MSSQL, PostgreSQL, MongoDB, ElasticSearch, SOLR
+LEGACY:   BDE/Paradox, Firebird, ActionScript 3, Flash
 
-- Backend: C#, ASP.NET, ASP.NET MVC
-- Frontend: JavaScript, TypeScript, HTML, CSS, jQuery, Angular, Bootstrap, Materialize
-- Bazy relacyjne: MSSQL, MySQL, PostgreSQL
-- Bazy nierelacyjne i wyszukiwarki: MongoDB, SOLR (Lucene), Elastic Search
-- Inne technologie: PHP, Unity3D
+------------------------------------------------------------
+[ EKSPERTYZA BRANŻOWA ]
+------------------------------------------------------------
+FINANSE:    Faktoring, Cash Pooling, Sprawozdawczość (NBP)
+LOTNICTWO:  Systemy zdatności do lotu (SafeFly)
+PRZEMYSŁ:   Obsługa linii produkcyjnych (Ferrero, TP S.A.)
+GOV:        Systemy budżetowe i finanse publiczne (JST)
+MEDYCYNA:   Zarządzanie gabinetami lekarskimi
+MEDIA:      Media Asset Management (TV), Gry i Multimedia
 
-Doświadczenie zawodowe:
-- BMS sp. z o.o. | Programista .NET / ekspert ds. systemów finansowych | styczeń 2016 - obecnie
-- Compensa S.A. | Programista .NET | grudzień 2014 - grudzień 2015
-- Trader.com (Polska) | Programista ASP.NET | listopad 2008 - listopad 2014
-- Amiatys | Programista PHP | styczeń 2013 - grudzień 2013
-- Comtica sp. z o.o. | Programista ASP.NET | luty 2008 - listopad 2008
-- Business Management Software sp. z o.o. | Programista Delphi | styczeń 2006 - marzec 2008
-- Delfin s.c. oraz Wyd. Edukacyjne "Geniusz" | Programista Delphi | 1996 - 2005
+------------------------------------------------------------
+[ ŚCIEŻKA ZAWODOWA ]
+------------------------------------------------------------
+2016-NOW:   BMS Sp. z o.o. | Ekspert .NET (Finanse)
+2014-2015:  Compensa S.A. | Programista .NET
+2008-2014:  Trader.com (Polska) | Programista ASP.NET
+2006-2008:  BMS Sp. z o.o. | Programista Delphi
+1996-2005:  Delfin S.C. / Geniusz | Delphi Multimedia Dev
 
-Wybrane systemy i projekty:
-- Izyda
-- Peocash
-- Ozyrys
-- GRYF
-- RBAN
-- Limes
-
-Wykształcenie:
-- Politechnika Lubelska - Informatyka, studia magisterskie przerwane z powodów osobistych
-- Technikum Mechaniczne w Świdniku - Technik budowy płatowca
+------------------------------------------------------------
+[ EDUKACJA ]
+------------------------------------------------------------
+- Politechnika Lubelska: Informatyka
+- Technikum Mechaniczne: Budowa płatowca (Ocena: 6.0)
+============================================================

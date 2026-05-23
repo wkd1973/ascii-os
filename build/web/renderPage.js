@@ -14,7 +14,11 @@ const renderWebPage = () => `<!doctype html>
 <body>
   <div class="wrap">
     <div class="head">
-      <span>ascii-os:web</span>
+      <div class="head-brand">
+        <span>ascii-os:web</span>
+        <span class="head-sep">|</span>
+        <a href="#" id="aoc-link" class="head-link">commander</a>
+      </div>
       <div id="sys-stats">
         <span id="sys-ram">640K OK</span>
         <span id="sys-clock">00:00:00</span>

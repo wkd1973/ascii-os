@@ -24,6 +24,11 @@ The ASCII-OS project is in a highly interactive and atmospheric state:
 1. **Audio Optimization**: Improve `AudioContext` management and sound quality of the synthesized "floppy crunch".
 2. **PWA Support**: Add a web manifest and service worker to make ASCII-OS installable as a standalone app.
 3. **AOC Unit Tests**: Expand test coverage to include AOC's specific logic (pane switching, selection).
+4. **SEO & Indexing**: 
+   - Add comprehensive metadata to `<head>` (description, keywords, OG tags).
+   - Implement a static sitemap generator that crawls `/content/data`.
+   - Add a hidden-to-user but visible-to-bots index of project links in the main HTML shell to ensure content discoverability.
+   - Explore deep-linking support for specific paths (e.g., `/cv`, `/projects/slug`) to allow direct indexing of portfolio sections.
 
 ## Recommended Next Batch
 
